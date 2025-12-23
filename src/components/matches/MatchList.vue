@@ -34,31 +34,31 @@
         class="match-card"
         elevation="2"
       >
-        <!-- Badge de estado -->
+        <!-- Badge de estado - SOLO EN LA PARTE SUPERIOR -->
         <div class="match-status-badge" :class="getStatusClass(match.status)">
-          <v-icon size="14" class="mr-1">{{ getStatusIcon(match.status) }}</v-icon>
-          <span class="text-caption font-weight-bold">{{ match.status }}</span>
+          <v-icon size="12" class="mr-1">{{ getStatusIcon(match.status) }}</v-icon>
+          <span class="status-text">{{ match.status }}</span>
         </div>
 
-        <!-- Contenido principal del partido -->
-        <v-card-text class="pa-4">
+        <!-- Contenido principal del partido - EN LA PARTE INFERIOR -->
+        <v-card-text class="pa-4 pt-10 mt-auto d-flex flex-column justify-end" style="flex: 1;">
           <!-- EQUIPOS EN FORMATO HORIZONTAL -->
-          <v-row class="align-center mb-3">
+          <v-row class="align-center mb-2">
             <!-- EQUIPO LOCAL -->
             <v-col cols="5" class="text-center pa-1">
               <div class="team-container">
                 <div class="team-shield mb-2">
-                  <v-icon size="40" color="white">mdi-shield</v-icon>
+                  <v-icon size="42" color="white">mdi-shield</v-icon>
                 </div>
                 <h5 class="text-body-1 font-weight-bold text-white mb-1 text-truncate">{{ match.home }}</h5>
-                <v-chip size="x-small" color="blue-grey-darken-2" class="text-caption">Local</v-chip>
+                <v-chip size="x-small" color="blue-grey-darken-2" class="text-caption chip-label">Local</v-chip>
               </div>
             </v-col>
 
             <!-- VS CENTRAL -->
             <v-col cols="2" class="text-center pa-1">
               <div class="vs-container">
-                <div class="vs-circle mx-auto mb-1">
+                <div class="vs-circle mx-auto mb-2">
                   <span class="text-body-1 font-weight-black text-white">VS</span>
                 </div>
                 <div class="match-time-badge">
@@ -72,24 +72,24 @@
             <v-col cols="5" class="text-center pa-1">
               <div class="team-container">
                 <div class="team-shield mb-2">
-                  <v-icon size="40" color="white">mdi-shield</v-icon>
+                  <v-icon size="42" color="white">mdi-shield</v-icon>
                 </div>
                 <h5 class="text-body-1 font-weight-bold text-white mb-1 text-truncate">{{ match.away }}</h5>
-                <v-chip size="x-small" color="blue-grey-darken-2" class="text-caption">Visitante</v-chip>
+                <v-chip size="x-small" color="blue-grey-darken-2" class="text-caption chip-label">Visitante</v-chip>
               </div>
             </v-col>
           </v-row>
 
           <v-divider class="border-opacity-25 my-2"></v-divider>
           
-          <!-- INFORMACIÓN ADICIONAL -->
-          <div class="match-details-row">
-            <div class="detail-item">
+          <!-- INFORMACIÓN ADICIONAL - EN UNA SOLA FILA -->
+          <div class="match-details-row-inline mb-2">
+            <div class="detail-item-inline">
               <v-icon size="16" color="grey-lighten-2" class="mr-1">mdi-calendar</v-icon>
-              <span class="text-caption text-grey-lighten-2">{{ match.date }}</span>
+              <span class="text-caption text-grey-lighten-2">{{ formatDate(match.date) }}</span>
             </div>
             
-            <div class="detail-item">
+            <div class="detail-item-inline">
               <v-icon size="16" color="grey-lighten-2" class="mr-1">mdi-map-marker</v-icon>
               <span class="text-caption text-grey-lighten-2">{{ match.location }}</span>
             </div>
@@ -98,15 +98,15 @@
           <!-- BOTÓN DE ACCIÓN -->
           <v-btn 
             block
-            class="mt-3 details-btn" 
+            class="mt-2 details-btn" 
             rounded="pill"
             append-icon="mdi-arrow-right"
             height="38"
             color="blue-grey-darken-2"
-            variant="elevated"
+            variant="flat"
             @click="viewMatchDetails(match)"
           >
-            <span class="text-caption">Ver Detalles</span>
+            <span class="text-caption font-weight-medium">Ver Detalles</span>
           </v-btn>
         </v-card-text>
       </v-card>
@@ -172,6 +172,20 @@ const matches = ref([
   }
 ]);
 
+// Formatear fecha como "Jue, Diciembre 23"
+const formatDate = (dateString) => {
+  const parts = dateString.split(' ');
+  const day = parts[0];
+  const month = parts[1];
+  const year = parts[2];
+  
+  const date = new Date(`${month} ${day}, ${year}`);
+  const diasSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+  const diaSemana = diasSemana[date.getDay()];
+  
+  return `${diaSemana}, ${month} ${day}`;
+};
+
 const getStatusClass = (status) => {
   const classes = {
     'Confirmado': 'status-confirmed',
@@ -215,29 +229,35 @@ const viewMatchDetails = (match) => {
   cursor: pointer;
   transition: all 0.3s ease;
   border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .filter-chip:hover {
   transform: translateY(-2px);
   border-color: rgba(255, 255, 255, 0.5);
+  color: white !important;
 }
 
-/* GRID DE PARTIDOS 2x2 */
+/* GRID DE PARTIDOS 2x2 - MÁS ANCHO */
 .matches-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+  gap: 26px;
 }
 
-/* CARD DE PARTIDO */
+/* CARD DE PARTIDO - MENOS ALTO */
 .match-card {
   background: rgba(255, 255, 255, 0.12) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 16px !important;
+  border-radius: 18px !important;
   transition: all 0.3s ease;
   position: relative;
   overflow: visible;
+  min-height: 310px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .match-card:hover {
@@ -246,18 +266,23 @@ const viewMatchDetails = (match) => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* BADGE DE ESTADO */
+/* BADGE DE ESTADO - FIJO EN LA PARTE SUPERIOR */
 .match-status-badge {
   position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 4px 10px;
+  top: 14px;
+  right: 14px;
+  padding: 5px 12px;
   border-radius: 20px;
   display: flex;
   align-items: center;
-  font-size: 0.7rem;
-  z-index: 2;
+  z-index: 3;
   backdrop-filter: blur(10px);
+}
+
+.status-text {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
 }
 
 .status-confirmed {
@@ -292,13 +317,13 @@ const viewMatchDetails = (match) => {
 
 /* CONTENEDORES DE EQUIPOS */
 .team-container {
-  padding: 6px;
+  padding: 4px;
 }
 
 .team-shield {
   background: rgba(255, 255, 255, 0.1);
-  width: 60px;
-  height: 60px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -326,6 +351,7 @@ const viewMatchDetails = (match) => {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  height: 100%;
 }
 
 .vs-circle {
@@ -356,30 +382,33 @@ const viewMatchDetails = (match) => {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-/* DETALLES DEL PARTIDO */
-.match-details-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 8px;
-  border-radius: 10px;
+/* ALINEAR HORA CON LOCAL/VISITANTE */
+.chip-label {
+  min-height: 20px;
 }
 
-.detail-item {
+/* DETALLES DEL PARTIDO - EN UNA SOLA FILA HORIZONTAL */
+.match-details-row-inline {
   display: flex;
   align-items: center;
-  padding: 4px 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  justify-content: center;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: 10px;
+  flex-wrap: wrap;
 }
 
-/* BOTÓN DE DETALLES */
+.detail-item-inline {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+/* BOTÓN DE DETALLES - MÁS DELGADO */
 .details-btn {
-  font-weight: 600 !important;
-  letter-spacing: 0.5px;
+  font-weight: 500 !important;
+  letter-spacing: 0.3px;
   text-transform: none !important;
 }
 
@@ -406,22 +435,22 @@ const viewMatchDetails = (match) => {
   }
   
   .team-shield {
-    width: 50px;
-    height: 50px;
+    width: 55px;
+    height: 55px;
   }
   
   .vs-circle {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
   }
   
-  .match-details-row {
+  .match-details-row-inline {
     flex-direction: column;
-    align-items: stretch;
+    gap: 8px;
   }
   
-  .detail-item {
-    justify-content: center;
+  .match-card {
+    min-height: auto;
   }
 }
 </style>
