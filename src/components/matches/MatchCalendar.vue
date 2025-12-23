@@ -1,5 +1,5 @@
 <template>
-  <v-card class="calendar-glass-card pa-5" elevation="0">
+  <v-card class="calendar-glass-card pa-5 d-flex flex-column" elevation="0">
     <div class="d-flex align-center mb-5">
       <div class="icon-wrapper mr-3">
         <v-icon color="grey-lighten-1" size="28">mdi-calendar-month</v-icon>
@@ -15,7 +15,7 @@
       theme="dark"
       width="100%"
       elevation="0"
-      class="custom-picker"
+      class="custom-picker flex-grow-1"
       bg-color="transparent"
       show-adjacent-months
     ></v-date-picker>
@@ -74,6 +74,7 @@ const selectedDate = ref(new Date());
   border-radius: 20px !important;
   transition: all 0.4s ease;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  height: 100%;
 }
 
 .calendar-glass-card:hover {
@@ -199,5 +200,9 @@ const selectedDate = ref(new Date());
 
 .gap-3 {
   gap: 12px;
+}
+
+.flex-grow-1 {
+  flex-grow: 1;
 }
 </style>

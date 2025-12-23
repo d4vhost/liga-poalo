@@ -21,15 +21,15 @@
     <!-- CONTENIDO PRINCIPAL -->
     <section class="matches-content py-12">
       <v-container>
-        <v-row>
-          <!-- CALENDARIO LATERAL -->
-          <v-col cols="12" md="4" lg="3" class="scroll-reveal">
-            <MatchCalendar />
+        <v-row class="align-stretch">
+          <!-- CALENDARIO LATERAL - MÁS A LA IZQUIERDA -->
+          <v-col cols="12" md="4" lg="4" class="scroll-reveal d-flex">
+            <MatchCalendar class="flex-fill" />
           </v-col>
 
-          <!-- LISTA DE PARTIDOS -->
-          <v-col cols="12" md="8" lg="9" class="scroll-reveal" style="transition-delay: 0.2s">
-            <MatchList />
+          <!-- LISTA DE PARTIDOS - MÁS ANCHO A LA DERECHA -->
+          <v-col cols="12" md="8" lg="8" class="scroll-reveal d-flex" style="transition-delay: 0.2s">
+            <MatchList class="flex-fill" />
           </v-col>
         </v-row>
       </v-container>
@@ -140,6 +140,21 @@ onUnmounted(() => {
   background: transparent;
   position: relative;
   z-index: 3;
+}
+
+/* ALINEACIÓN DE ALTURA */
+.align-stretch {
+  align-items: stretch !important;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-fill {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ANIMACIONES */
