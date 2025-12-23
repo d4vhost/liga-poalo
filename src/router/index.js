@@ -12,13 +12,13 @@ const router = createRouter({
     {
       path: '/partidos',
       name: 'partidos',
-      // Carga perezosa (mejor rendimiento)
-      component: () => import('../views/HomeView.vue') // TEMPORAL hasta que creemos la vista Partidos
+      // Ahora importamos la nueva vista creada
+      component: () => import('../views/MatchesView.vue') 
     },
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/HomeView.vue') // TEMPORAL
+      component: () => import('../views/HomeView.vue') // Mantén temporal hasta hacer el login
     }
   ]
 })
