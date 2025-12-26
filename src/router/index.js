@@ -12,8 +12,12 @@ const router = createRouter({
     {
       path: '/partidos',
       name: 'partidos',
-      // Ahora importamos la nueva vista creada
       component: () => import('../views/MatchesView.vue') 
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: () => import('../views/ContactView.vue')
     },
     {
       path: '/login',

@@ -22,7 +22,8 @@
         to="/" 
         variant="text" 
         :ripple="false" 
-        class="nav-link font-weight-bold active-drop"
+        class="nav-link font-weight-bold"
+        :class="{ 'active-drop': isActiveRoute('/') }"
       >
         {{ texts[currentLang].home }}
       </v-btn>
@@ -31,7 +32,8 @@
         to="/partidos" 
         variant="text" 
         :ripple="false" 
-        class="nav-link font-weight-bold text-grey-lighten-2"
+        class="nav-link font-weight-bold"
+        :class="{ 'active-drop': isActiveRoute('/partidos') }"
       >
         {{ texts[currentLang].matches }}
       </v-btn>
@@ -40,7 +42,8 @@
         to="/contact" 
         variant="text" 
         :ripple="false" 
-        class="nav-link font-weight-bold text-grey-lighten-2"
+        class="nav-link font-weight-bold"
+        :class="{ 'active-drop': isActiveRoute('/contact') }"
       >
         {{ texts[currentLang].contact }}
       </v-btn>
@@ -90,12 +93,19 @@
 
 <script setup>
 import { ref, computed } from 'vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const currentLang = ref('es');
 
 const currentFlag = computed(() => {
   return currentLang.value === 'es' ? '🇪🇨' : '🇺🇸';
 });
+
+// Función para verificar si la ruta está activa
+const isActiveRoute = (path) => {
+  return route.path === path;
+};
 
 const texts = {
   es: {
@@ -145,6 +155,7 @@ const setLang = (lang) => {
   margin: 0 2px;
   border-radius: 30px;
   height: 38px !important;
+  color: rgba(255, 255, 255, 0.6) !important;
 }
 
 /* --- EFECTO GOTA DE AGUA "CRISTALINA" --- */
