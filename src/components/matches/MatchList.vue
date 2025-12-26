@@ -34,14 +34,14 @@
         class="match-card"
         elevation="2"
       >
-        <!-- Badge de estado - SOLO EN LA PARTE SUPERIOR -->
+        <!-- Badge de estado - SEPARADO MÁS DE LOS ESCUDOS -->
         <div class="match-status-badge" :class="getStatusClass(match.status)">
-          <v-icon size="12" class="mr-1">{{ getStatusIcon(match.status) }}</v-icon>
+          <v-icon size="10" class="mr-1">{{ getStatusIcon(match.status) }}</v-icon>
           <span class="status-text">{{ match.status }}</span>
         </div>
 
-        <!-- Contenido principal del partido - EN LA PARTE INFERIOR -->
-        <v-card-text class="pa-4 pt-10 mt-auto d-flex flex-column justify-end" style="flex: 1;">
+        <!-- Contenido principal del partido -->
+        <v-card-text class="pa-4 pt-14 mt-auto d-flex flex-column justify-end" style="flex: 1;">
           <!-- EQUIPOS EN FORMATO HORIZONTAL -->
           <v-row class="align-center mb-2">
             <!-- EQUIPO LOCAL -->
@@ -238,14 +238,14 @@ const viewMatchDetails = (match) => {
   color: white !important;
 }
 
-/* GRID DE PARTIDOS 2x2 - MÁS ANCHO */
+/* GRID DE PARTIDOS 2x2 */
 .matches-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 26px;
 }
 
-/* CARD DE PARTIDO - MENOS ALTO */
+/* CARD DE PARTIDO */
 .match-card {
   background: rgba(255, 255, 255, 0.12) !important;
   backdrop-filter: blur(10px);
@@ -266,23 +266,26 @@ const viewMatchDetails = (match) => {
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4) !important;
 }
 
-/* BADGE DE ESTADO - FIJO EN LA PARTE SUPERIOR */
+/* BADGE DE ESTADO - MÁS SEPARADO DE LOS ESCUDOS */
 .match-status-badge {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  padding: 5px 12px;
-  border-radius: 20px;
+  top: 18px;
+  right: 18px;
+  padding: 5px 10px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
-  z-index: 3;
+  z-index: 10;
   backdrop-filter: blur(10px);
+  /* Mayor separación del contenido de abajo */
+  margin-bottom: 24px;
 }
 
 .status-text {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.3px;
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
 }
 
 .status-confirmed {
@@ -405,7 +408,7 @@ const viewMatchDetails = (match) => {
   white-space: nowrap;
 }
 
-/* BOTÓN DE DETALLES - MÁS DELGADO */
+/* BOTÓN DE DETALLES */
 .details-btn {
   font-weight: 500 !important;
   letter-spacing: 0.3px;
@@ -451,6 +454,11 @@ const viewMatchDetails = (match) => {
   
   .match-card {
     min-height: auto;
+  }
+  
+  .match-status-badge {
+    top: 12px;
+    right: 12px;
   }
 }
 </style>

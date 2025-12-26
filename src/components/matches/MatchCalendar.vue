@@ -111,17 +111,41 @@ const selectedDate = ref(new Date());
   color: rgba(255, 255, 255, 0.7) !important;
 }
 
-/* ELIMINAR BORDE BLANCO CUADRADO AL SELECCIONAR DÍA */
+/* ELIMINAR COMPLETAMENTE BORDES CUADRADOS - SOLO CÍRCULO */
 .custom-picker :deep(.v-date-picker-month__day--selected) {
   background: rgba(255, 255, 255, 0.15) !important;
   color: white !important;
   box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
   border: none !important;
   outline: none !important;
+  border-radius: 50% !important;
+}
+
+/* Asegurar que el botón interno también sea circular */
+.custom-picker :deep(.v-date-picker-month__day--selected .v-btn) {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+  border-radius: 50% !important;
 }
 
 .custom-picker :deep(.v-date-picker-month__day:hover) {
   background: rgba(255, 255, 255, 0.1) !important;
+  border-radius: 50% !important;
+}
+
+/* Asegurar que el hover también sea circular en el botón interno */
+.custom-picker :deep(.v-date-picker-month__day:hover button) {
+  border-radius: 50% !important;
+  border: none !important;
+  outline: none !important;
+}
+
+/* Eliminar borde cuadrado en hover del día */
+.custom-picker :deep(.v-date-picker-month__day:hover > *) {
+  border-radius: 50% !important;
+  border: none !important;
+  outline: none !important;
 }
 
 .custom-picker :deep(.v-date-picker-month__weekday) {
@@ -141,21 +165,37 @@ const selectedDate = ref(new Date());
   color: white !important;
 }
 
-/* QUITAR CUALQUIER BORDE O OUTLINE */
+/* QUITAR CUALQUIER BORDE O OUTLINE DE TODOS LOS ELEMENTOS */
 .custom-picker :deep(.v-date-picker-month__day button) {
   border: none !important;
   outline: none !important;
   box-shadow: none !important;
+  border-radius: 50% !important;
 }
 
 .custom-picker :deep(.v-date-picker-month__day button:focus) {
   outline: none !important;
   box-shadow: none !important;
+  border: none !important;
 }
 
 .custom-picker :deep(.v-btn:focus-visible) {
   outline: none !important;
   box-shadow: none !important;
+  border: none !important;
+}
+
+/* Eliminar el borde del contenedor del día también */
+.custom-picker :deep(.v-date-picker-month__day) {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Asegurar que el wrapper del botón no tenga bordes */
+.custom-picker :deep(.v-date-picker-month__day > *) {
+  border: none !important;
+  outline: none !important;
+  border-radius: 50% !important;
 }
 
 /* ESTADÍSTICAS - SIN MARGEN SUPERIOR, SOLO PADDING */

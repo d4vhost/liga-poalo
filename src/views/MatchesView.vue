@@ -6,7 +6,7 @@
       <v-container class="hero-content">
         <div class="text-center fade-in-up">
           <h1 class="text-h2 text-md-h1 font-weight-black text-white text-uppercase mb-4" style="letter-spacing: -2px; text-shadow: 3px 3px 6px rgba(0,0,0,0.9);">
-            Calendario de Juegos
+            Partidos Programados
           </h1>
           <p class="text-h6 text-grey-lighten-2 mx-auto" style="max-width: 700px; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
             Consulta las fechas, horarios y resultados de la Liga San José de Poaló.
