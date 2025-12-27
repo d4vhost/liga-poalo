@@ -151,8 +151,8 @@
         <v-row class="justify-center">
           <v-col cols="12" lg="10" class="scroll-reveal" style="transition-delay: 0.2s">
             <v-card class="map-card pa-0" elevation="0">
-              <!-- Información de Distancia -->
-              <div v-if="userLocation && distance" class="distance-banner pa-4">
+              <!-- Información de Distancia (Solo si ya se activó la ubicación) -->
+              <div v-if="showDistance && userLocation && distance" class="distance-banner pa-4">
                 <div class="d-flex align-center justify-space-between flex-wrap gap-3">
                   <div class="d-flex align-center">
                     <v-icon color="green-lighten-2" size="32" class="mr-3">mdi-map-marker-distance</v-icon>
@@ -169,13 +169,28 @@
                     @click="openDirections"
                     prepend-icon="mdi-directions"
                   >
-                    Ver Ruta
+                    Ver Ruta en Google Maps
                   </v-btn>
                 </div>
               </div>
 
               <!-- Contenedor del Mapa -->
               <div id="map" class="map-container"></div>
+
+              <!-- Botón para activar ubicación del usuario -->
+              <div v-if="!showDistance" class="location-button-overlay">
+                <v-btn
+                  color="blue-lighten-2"
+                  variant="flat"
+                  rounded="pill"
+                  size="small"
+                  @click="getUserLocationAndShowRoute"
+                  prepend-icon="mdi-crosshairs-gps"
+                  class="elevation-6"
+                >
+                  <span class="text-caption font-weight-medium">Ver Ubicación</span>
+                </v-btn>
+              </div>
 
               <!-- Información Adicional -->
               <div class="map-info pa-6">
@@ -218,14 +233,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue';
+import { ref, onMounted, onUnmounted, inject } from 'vue';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 
+// Inyectar el tema desde App o usar local
+const isDarkMode = inject('isDarkMode', ref(true));
+
 // Coordenadas del Estadio San José de Poaló
-const stadiumCoords = [-1.1847, -78.5453]; // Coordenadas aproximadas de San José de Poaló
+const stadiumCoords = [-1.1847, -78.5453];
 const userLocation = ref(null);
 const distance = ref(null);
+const showDistance = ref(false);
 let map = null;
 let userMarker = null;
 let stadiumMarker = null;
@@ -272,9 +291,8 @@ const calculateDistance = (lat1, lon1, lat2, lon2) => {
   }
 };
 
-// Inicializar mapa
+// Inicializar mapa (solo con el marcador del estadio)
 const initMap = () => {
-  // Crear mapa centrado en el estadio
   map = L.map('map', {
     center: stadiumCoords,
     zoom: 15,
@@ -285,26 +303,26 @@ const initMap = () => {
     doubleClickZoom: true
   });
 
-  // Añadir capa de mapa
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 19
   }).addTo(map);
 
-  // Icono personalizado para el estadio
+  // Icono personalizado para el estadio (pelota de fútbol emoji)
   const stadiumIcon = L.divIcon({
     className: 'custom-stadium-marker',
-    html: '<div style="background: #4CAF50; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="color: white; font-size: 20px;">⚽</span></div>',
+    html: '<span style="font-size: 25px;">⚽</span>',
     iconSize: [40, 40],
     iconAnchor: [20, 20]
   });
 
-  // Marcador del estadio
   stadiumMarker = L.marker(stadiumCoords, { icon: stadiumIcon })
     .addTo(map)
     .bindPopup('<b>Estadio San José de Poaló</b><br>Ubicación del estadio principal');
+};
 
-  // Obtener ubicación del usuario
+// Obtener ubicación del usuario y mostrar ruta
+const getUserLocationAndShowRoute = () => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -314,22 +332,21 @@ const initMap = () => {
         // Icono personalizado para usuario
         const userIcon = L.divIcon({
           className: 'custom-user-marker',
-          html: '<div style="background: #2196F3; width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);"><span style="color: white; font-size: 16px;">📍</span></div>',
-          iconSize: [30, 30],
-          iconAnchor: [15, 15]
+          html: '<svg viewBox="0 0 24 24" width="36" height="36"><path fill="#2196F3" d="M12,11.5A2.5,2.5 0 0,1 9.5,9A2.5,2.5 0 0,1 12,6.5A2.5,2.5 0 0,1 14.5,9A2.5,2.5 0 0,1 12,11.5M12,2A7,7 0 0,0 5,9C5,14.25 12,22 12,22C12,22 19,14.25 19,9A7,7 0 0,0 12,2Z"/></svg>',
+          iconSize: [36, 36],
+          iconAnchor: [18, 36]
         });
 
-        // Marcador del usuario
         userMarker = L.marker(userCoords, { icon: userIcon })
           .addTo(map)
           .bindPopup('<b>Tu ubicación</b>');
 
-        // Dibujar línea de ruta
+        // Dibujar línea de ruta (negra, fina y punteada)
         routeLine = L.polyline([userCoords, stadiumCoords], {
-          color: '#2196F3',
-          weight: 3,
-          opacity: 0.7,
-          dashArray: '10, 10'
+          color: '#000000',
+          weight: 2,
+          opacity: 0.6,
+          dashArray: '5, 8'
         }).addTo(map);
 
         // Ajustar vista para mostrar ambos marcadores
@@ -341,11 +358,16 @@ const initMap = () => {
           userCoords[0], userCoords[1],
           stadiumCoords[0], stadiumCoords[1]
         );
+
+        showDistance.value = true;
       },
       (error) => {
         console.log('No se pudo obtener la ubicación:', error);
+        alert('No pudimos obtener tu ubicación. Verifica que hayas dado permisos de ubicación.');
       }
     );
+  } else {
+    alert('Tu navegador no soporta geolocalización.');
   }
 };
 
@@ -361,12 +383,10 @@ const openDirections = () => {
 let observer;
 
 onMounted(() => {
-  // Inicializar mapa
   setTimeout(() => {
     initMap();
   }, 100);
 
-  // Scroll animations
   const options = {
     threshold: 0.15,
     rootMargin: '0px 0px -80px 0px'
@@ -475,18 +495,17 @@ onUnmounted(() => {
   background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }
 
-/* CONTACT CARDS */
+/* CONTACT CARDS - SIN MOVIMIENTO EN HOVER */
 .contact-card {
   background: rgba(255, 255, 255, 0.04) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 24px !important;
-  transition: all 0.4s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
   height: 100%;
 }
 
 .contact-card:hover {
-  transform: translateY(-8px);
   border-color: rgba(255, 255, 255, 0.15);
   box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
 }
@@ -564,6 +583,7 @@ onUnmounted(() => {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 24px !important;
   overflow: hidden;
+  position: relative;
 }
 
 .distance-banner {
@@ -576,6 +596,19 @@ onUnmounted(() => {
   height: 500px;
   position: relative;
   z-index: 1;
+}
+
+.location-button-overlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.location-button-overlay .v-btn {
+  pointer-events: all;
 }
 
 .map-info {
