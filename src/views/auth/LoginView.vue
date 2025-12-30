@@ -143,32 +143,72 @@
 <script setup>
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { supabase } from '../../services/supabase'; // Importamos el cliente
 
 const router = useRouter();
 const isValid = ref(false);
 const isLoading = ref(false);
 const showPassword = ref(false);
+const errorMessage = ref(''); // Para mostrar errores en la UI
 
 const email = ref('');
 const password = ref('');
 
 const rules = {
   required: value => !!value || 'Requerido.',
-  email: value => {
-    const pattern = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    return pattern.test(value) || 'Correo inválido.'
-  }
+  email: value => /.+@.+\..+/.test(value) || 'Correo inválido.'
 };
 
 const handleLogin = async () => {
   if (!isValid.value) return;
 
   isLoading.value = true;
-  setTimeout(() => {
+  errorMessage.value = '';
+
+  try {
+    // 1. Iniciar sesión en Supabase Auth
+    const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+      email: email.value,
+      password: password.value,
+    });
+
+    if (authError) throw authError;
+
+    // 2. Obtener el rol desde la tabla 'profiles' usando el ID del usuario
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .single();
+
+    if (profileError) throw profileError;
+
+    const userRole = profileData?.role;
+
+    console.log('Login exitoso. Rol detectado:', userRole);
+
+    // 3. Redirección basada en Rol
+    switch (userRole) {
+      case 'admin':
+        router.push('/panel-admin');
+        break;
+      case 'arbitro':
+        router.push('/panel-arbitro');
+        break;
+      case 'jugador':
+        router.push('/panel-jugador');
+        break;
+      default:
+        // Si no tiene rol o es desconocido, lo mandamos al home o jugador por defecto
+        router.push('/');
+    }
+
+  } catch (error) {
+    console.error('Error al iniciar sesión:', error.message);
+    errorMessage.value = 'Credenciales incorrectas o error de conexión.';
+  } finally {
     isLoading.value = false;
-    console.log('Login exitoso con:', email.value);
-    router.push('/');
-  }, 1500);
+  }
 };
 </script>
 
