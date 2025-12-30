@@ -12,19 +12,30 @@ const router = createRouter({
     {
       path: '/partidos',
       name: 'partidos',
-      component: () => import('../views/MatchesView.vue') 
+      component: () => import('../views/MatchesView.vue')
     },
     {
       path: '/contact',
       name: 'contact',
       component: () => import('../views/ContactView.vue')
     },
+    // Rutas de Autenticación (Sin Navbar/Footer)
     {
       path: '/login',
       name: 'login',
-      component: () => import('../views/HomeView.vue') // Mantén temporal hasta hacer el login
+      component: () => import('../views/auth/LoginView.vue'),
+      meta: { hideLayout: true } // <--- ESTO ES LA CLAVE
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: () => import('../views/auth/RegisterView.vue'),
+      meta: { hideLayout: true } // <--- ESTO ES LA CLAVE
     }
-  ]
+  ],
+  scrollBehavior() {
+    return { top: 0 }
+  }
 })
 
 export default router
