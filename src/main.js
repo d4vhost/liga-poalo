@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia' 
 import App from './App.vue'
 import router from './router'
 
@@ -8,20 +9,21 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 
-// 2. Importar los Iconos (Material Design Icons)
+// 2. Importar los Iconos
 import '@mdi/font/css/materialdesignicons.css' 
 
-// 3. Configuración de Vuetify (Tema y colores)
+// 3. Configuración de Vuetify
 const vuetify = createVuetify({
   components,
   directives,
   theme: {
-    defaultTheme: 'light', // Puedes cambiar a 'dark' si prefieres fondo negro
+    defaultTheme: 'light',
   },
 })
 
 const app = createApp(App)
 
+app.use(createPinia()) 
 app.use(router)
 app.use(vuetify)
 app.mount('#app')
