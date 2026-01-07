@@ -141,15 +141,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
-import { supabase } from '../../services/supabase'; // Importamos el cliente
+import { supabase } from '../../services/supabase';
 
 const router = useRouter();
 const isValid = ref(false);
 const isLoading = ref(false);
 const showPassword = ref(false);
-const errorMessage = ref(''); // Para mostrar errores en la UI
+const errorMessage = ref('');
 
 const email = ref('');
 const password = ref('');
@@ -159,6 +159,28 @@ const rules = {
   email: value => /.+@.+\..+/.test(value) || 'Correo inválido.'
 };
 
+// --- 1. Lógica de Redirección ---
+const redireccionarPorRol = (role) => {
+  switch (role) {
+    case 'admin': router.push('/panel-admin'); break;
+    case 'arbitro': router.push('/panel-arbitro'); break;
+    case 'jugador': router.push('/panel-jugador'); break;
+    default: router.push('/');
+  }
+};
+
+// --- 2. Verificar Sesión al abrir la app (Auto-Login) ---
+onMounted(async () => {
+  // Si ya hay sesión activa (no cerraste sesión explícitamente)
+  const { data } = await supabase.auth.getSession();
+  const cachedRole = localStorage.getItem('user_role');
+
+  if (data.session && cachedRole) {
+    console.log("Sesión recuperada automáticamente");
+    redireccionarPorRol(cachedRole);
+  }
+});
+
 const handleLogin = async () => {
   if (!isValid.value) return;
 
@@ -166,15 +188,15 @@ const handleLogin = async () => {
   errorMessage.value = '';
 
   try {
-    // 1. Iniciar sesión en Supabase Auth
+    // A) INTENTO ONLINE: Preguntamos a Supabase
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email.value,
       password: password.value,
     });
 
-    if (authError) throw authError;
+    if (authError) throw authError; // Si falla por red, salta al CATCH
 
-    // 2. Obtener el rol desde la tabla 'profiles' usando el ID del usuario
+    // B) Si hay internet y funcionó: Obtenemos el rol
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('role')
@@ -185,27 +207,51 @@ const handleLogin = async () => {
 
     const userRole = profileData?.role;
 
-    console.log('Login exitoso. Rol detectado:', userRole);
+    // --- C) GUARDADO INTELIGENTE PARA OFFLINE ---
+    // Guardamos las credenciales "correctas" para usarlas cuando no haya red
+    // NOTA: Esto permite re-ingresar sin internet
+    localStorage.setItem('offline_auth', JSON.stringify({
+      email: email.value,
+      password: password.value,
+      role: userRole
+    }));
+    
+    // También guardamos el rol activo
+    localStorage.setItem('user_role', userRole);
 
-    // 3. Redirección basada en Rol
-    switch (userRole) {
-      case 'admin':
-        router.push('/panel-admin');
-        break;
-      case 'arbitro':
-        router.push('/panel-arbitro');
-        break;
-      case 'jugador':
-        router.push('/panel-jugador');
-        break;
-      default:
-        // Si no tiene rol o es desconocido, lo mandamos al home o jugador por defecto
-        router.push('/');
-    }
+    console.log('Login Online Exitoso. Credenciales respaldadas.');
+    redireccionarPorRol(userRole);
 
   } catch (error) {
-    console.error('Error al iniciar sesión:', error.message);
-    errorMessage.value = 'Credenciales incorrectas o error de conexión.';
+    // --- D) MANEJO DE MODO OFFLINE ---
+    // Si el error es de RED (NetworkError) o CORS, intentamos Login Local
+    console.error("Error detectado:", error.message);
+    
+    if (error.message.includes('Network') || error.message.includes('Fetch') || !navigator.onLine) {
+      console.log("Detectado fallo de red. Intentando autenticación local...");
+      
+      // Buscamos si tenemos credenciales guardadas de una vez anterior
+      const savedAuth = localStorage.getItem('offline_auth');
+      
+      if (savedAuth) {
+        const credentials = JSON.parse(savedAuth);
+        
+        // Comparamos lo que escribió el usuario con lo guardado
+        if (email.value === credentials.email && password.value === credentials.password) {
+          
+          // ¡COINCIDEN! Dejamos pasar simulando que hubo login
+          localStorage.setItem('user_role', credentials.role); // Reactivamos el rol
+          
+          alert('⚠️ Iniciando en Modo Offline (Sin conexión)');
+          redireccionarPorRol(credentials.role);
+          return; // Salimos de la función exitosamente
+        }
+      }
+      errorMessage.value = 'Sin conexión y credenciales no coinciden con el último usuario.';
+    } else {
+      // Si es otro error (ej: contraseña incorrecta real), lo mostramos
+      errorMessage.value = 'Credenciales incorrectas o error de conexión.';
+    }
   } finally {
     isLoading.value = false;
   }
