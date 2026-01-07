@@ -223,33 +223,24 @@ const handleLogin = async () => {
     redireccionarPorRol(userRole);
 
   } catch (error) {
-    // --- D) MANEJO DE MODO OFFLINE ---
-    // Si el error es de RED (NetworkError) o CORS, intentamos Login Local
     console.error("Error detectado:", error.message);
     
     if (error.message.includes('Network') || error.message.includes('Fetch') || !navigator.onLine) {
       console.log("Detectado fallo de red. Intentando autenticación local...");
-      
-      // Buscamos si tenemos credenciales guardadas de una vez anterior
       const savedAuth = localStorage.getItem('offline_auth');
       
       if (savedAuth) {
         const credentials = JSON.parse(savedAuth);
-        
-        // Comparamos lo que escribió el usuario con lo guardado
         if (email.value === credentials.email && password.value === credentials.password) {
-          
-          // ¡COINCIDEN! Dejamos pasar simulando que hubo login
-          localStorage.setItem('user_role', credentials.role); // Reactivamos el rol
+          localStorage.setItem('user_role', credentials.role);
           
           alert('⚠️ Iniciando en Modo Offline (Sin conexión)');
           redireccionarPorRol(credentials.role);
-          return; // Salimos de la función exitosamente
+          return; 
         }
       }
       errorMessage.value = 'Sin conexión y credenciales no coinciden con el último usuario.';
     } else {
-      // Si es otro error (ej: contraseña incorrecta real), lo mostramos
       errorMessage.value = 'Credenciales incorrectas o error de conexión.';
     }
   } finally {
