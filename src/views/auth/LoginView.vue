@@ -43,6 +43,16 @@
               </p>
             </div>
 
+            <div 
+              v-if="errorMessage" 
+              class="d-flex align-center justify-center mb-5 text-orange-darken-1 fade-in"
+            >
+              <v-icon icon="mdi-alert" size="small" class="mr-2"></v-icon>
+              <span class="text-caption font-weight-bold text-uppercase" style="letter-spacing: 0.5px;">
+                {{ errorMessage }}
+              </span>
+            </div>
+
             <v-form v-model="isValid" @submit.prevent="handleLogin">
               
               <div class="mb-4">
@@ -159,25 +169,28 @@ const rules = {
   email: value => /.+@.+\..+/.test(value) || 'Correo inválido.'
 };
 
-// --- 1. Lógica de Redirección ---
+// --- Lógica de Redirección ---
 const redireccionarPorRol = (role) => {
-  switch (role) {
-    case 'admin': router.push('/panel-admin'); break;
-    case 'arbitro': router.push('/panel-arbitro'); break;
-    case 'jugador': router.push('/panel-jugador'); break;
-    default: router.push('/');
-  }
+  if (role === 'admin') router.push('/panel-admin');
+  else if (role === 'arbitro') router.push('/panel-arbitro');
+  else if (role === 'jugador') router.push('/panel-jugador');
+  else throw new Error('NO_PERMISSION');
 };
 
-// --- 2. Verificar Sesión al abrir la app (Auto-Login) ---
+// --- Verificar Sesión al Iniciar ---
 onMounted(async () => {
-  // Si ya hay sesión activa (no cerraste sesión explícitamente)
   const { data } = await supabase.auth.getSession();
   const cachedRole = localStorage.getItem('user_role');
 
-  if (data.session && cachedRole) {
-    console.log("Sesión recuperada automáticamente");
-    redireccionarPorRol(cachedRole);
+  if (data.session) {
+    if (cachedRole && ['admin', 'arbitro', 'jugador'].includes(cachedRole)) {
+      redireccionarPorRol(cachedRole);
+    } else {
+      // Limpieza silenciosa si hay sesión inválida
+      await supabase.auth.signOut();
+      localStorage.removeItem('user_role');
+      localStorage.removeItem('offline_auth');
+    }
   }
 });
 
@@ -188,61 +201,52 @@ const handleLogin = async () => {
   errorMessage.value = '';
 
   try {
-    // A) INTENTO ONLINE: Preguntamos a Supabase
+    // 1. Autenticación
     const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
       email: email.value,
       password: password.value,
     });
 
-    if (authError) throw authError; // Si falla por red, salta al CATCH
+    if (authError) throw authError;
 
-    // B) Si hay internet y funcionó: Obtenemos el rol
+    // 2. Obtener Perfil
     const { data: profileData, error: profileError } = await supabase
       .from('profiles')
       .select('role')
       .eq('id', authData.user.id)
-      .maybeSingle(); 
+      .maybeSingle();
 
     if (profileError) throw profileError;
 
-    // Si no tiene perfil (profileData es null), asumimos que es público (rol null)
-    const userRole = profileData?.role || null;
+    const userRole = profileData?.role;
 
-    // --- C) GUARDADO INTELIGENTE PARA OFFLINE ---
-    // Guardamos las credenciales "correctas" para usarlas cuando no haya red
-    // NOTA: Esto permite re-ingresar sin internet
+    // 3. Validar Permisos
+    if (!userRole || !['admin', 'arbitro', 'jugador'].includes(userRole)) {
+      // Si entra aquí, es usuario público (thedepthed)
+      await supabase.auth.signOut(); // Cerramos sesión para que no se quede "logueado a medias"
+      throw new Error('NO_PERMISSION'); 
+    }
+
+    // 4. Éxito
+    localStorage.setItem('user_role', userRole);
     localStorage.setItem('offline_auth', JSON.stringify({
       email: email.value,
       password: password.value,
       role: userRole
     }));
-    
-    // También guardamos el rol activo
-    localStorage.setItem('user_role', userRole);
 
-    console.log('Login Online Exitoso. Credenciales respaldadas.');
     redireccionarPorRol(userRole);
 
   } catch (error) {
-    console.error("Error detectado:", error.message);
+    console.error("Login Check:", error.message);
     
-    if (error.message.includes('Network') || error.message.includes('Fetch') || !navigator.onLine) {
-      console.log("Detectado fallo de red. Intentando autenticación local...");
-      const savedAuth = localStorage.getItem('offline_auth');
-      
-      if (savedAuth) {
-        const credentials = JSON.parse(savedAuth);
-        if (email.value === credentials.email && password.value === credentials.password) {
-          localStorage.setItem('user_role', credentials.role);
-          
-          alert('⚠️ Iniciando en Modo Offline (Sin conexión)');
-          redireccionarPorRol(credentials.role);
-          return; 
-        }
-      }
-      errorMessage.value = 'Sin conexión y credenciales no coinciden con el último usuario.';
+    // MENSAJES PERSONALIZADOS
+    if (error.message === 'NO_PERMISSION') {
+      errorMessage.value = 'Su cuenta es pública. No requiere acceso al sistema.';
+    } else if (error.message.includes('Invalid login')) {
+      errorMessage.value = 'Credenciales incorrectas. Verifique correo y contraseña.';
     } else {
-      errorMessage.value = 'Credenciales incorrectas o error de conexión.';
+      errorMessage.value = 'Error de conexión o credenciales inválidas.';
     }
   } finally {
     isLoading.value = false;
@@ -258,125 +262,63 @@ const handleLogin = async () => {
   background: #000;
 }
 
-/* --- FONDO DERECHO --- */
-.bg-dark-theme {
-  background: #0f1012; 
-}
-
-/* --- IMAGEN IZQUIERDA --- */
-.login-image {
-  height: 100%;
-  width: 100%;
-  filter: brightness(0.85); 
-}
-
+/* --- ESTILOS VISUALES --- */
+.bg-dark-theme { background: #0f1012; }
+.login-image { height: 100%; width: 100%; filter: brightness(0.85); }
 .image-text-wrapper {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 50%;
+  position: absolute; bottom: 0; left: 0; width: 100%; height: 50%;
   background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 60%, transparent 100%);
 }
-
-.text-shadow-heavy {
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.9);
-}
-
-/* --- INPUTS --- */
-.tracking-wider {
-  letter-spacing: 1px;
-}
+.text-shadow-heavy { text-shadow: 2px 2px 8px rgba(0,0,0,0.9); }
+.tracking-wider { letter-spacing: 1px; }
 
 .custom-input-gray :deep(.v-field) {
   border-radius: 12px !important;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
 }
-
 .custom-input-gray :deep(.v-field--focused) {
   border-color: rgba(255, 255, 255, 0.4) !important;
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
   background: rgba(255,255,255,0.09) !important;
 }
+.custom-input-gray :deep(input) { padding-top: 0; }
+.custom-input-gray :deep(input::placeholder) { color: rgba(255, 255, 255, 0.25) !important; opacity: 1; }
 
-.custom-input-gray :deep(input) {
-  padding-top: 0; /* Ajuste para density comfortable */
-}
-
-.custom-input-gray :deep(input::placeholder) {
-  color: rgba(255, 255, 255, 0.25) !important;
-  opacity: 1;
-}
-
-/* --- BOTONES --- */
 .btn-login-gray {
   letter-spacing: 1.5px;
   transition: all 0.3s ease;
   border: 1px solid white;
 }
-
 .btn-login-gray:hover {
   background: #e0e0e0 !important;
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(255, 255, 255, 0.15);
 }
+.hover-bright:hover { color: white !important; }
 
-.hover-bright:hover {
-  color: white !important;
-}
-
-/* --- SECCIÓN REGISTRO --- */
-.register-section {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-
+/* REGISTRO */
+.register-section { border: 1px solid rgba(255, 255, 255, 0.08); overflow: hidden; }
 .background-glass {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(255, 255, 255, 0.02);
-  z-index: 1;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255, 255, 255, 0.02); z-index: 1;
 }
-
 .btn-outline-gray {
-  border-width: 1px;
-  letter-spacing: 1px;
-  font-weight: 700;
-  transition: all 0.3s;
+  border-width: 1px; letter-spacing: 1px; font-weight: 700; transition: all 0.3s;
 }
+.btn-outline-gray:hover { background: rgba(255, 255, 255, 0.1) !important; border-color: white; }
 
-.btn-outline-gray:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-  border-color: white;
-}
-
-/* ANIMACIÓN */
-.fade-in-up {
-  opacity: 0;
-  animation: fadeInUp 0.8s ease forwards;
-}
-
+/* ANIMACIONES */
+.fade-in-up { opacity: 0; animation: fadeInUp 0.8s ease forwards; }
 @keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* Responsive */
+.fade-in { animation: fadeIn 0.5s ease forwards; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
 @media (max-width: 960px) {
-  .login-container {
-    height: auto;
-    min-height: 100vh;
-    overflow-y: auto;
-  }
+  .login-container { height: auto; min-height: 100vh; overflow-y: auto; }
 }
 </style>
