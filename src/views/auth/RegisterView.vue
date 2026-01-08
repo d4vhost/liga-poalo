@@ -256,6 +256,29 @@
             </v-form>
           </div>
         </v-container>
+
+        <v-overlay
+          v-model="registrationSuccess"
+          contained
+          class="align-center justify-center text-center"
+          persistent
+          scrim="#0f1012"
+          style="backdrop-filter: blur(5px);"
+        >
+          <div class="d-flex flex-column align-center success-content">
+            <div class="success-circle mb-6">
+              <v-icon icon="mdi-check" color="white" size="60" class="check-icon"></v-icon>
+            </div>
+            
+            <h2 class="text-h4 font-weight-bold text-white mb-2 fade-in-text">
+              ¡Registro Exitoso!
+            </h2>
+            <p class="text-grey-lighten-1 fade-in-text delay-200">
+              Tu solicitud está en revisión.
+            </p>
+          </div>
+        </v-overlay>
+
       </v-col>
     </v-row>
   </div>
@@ -264,11 +287,13 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { supabase } from '../../services/supabase';
 
 const router = useRouter();
 const isValid = ref(false);
 const isLoading = ref(false);
 const showPassword = ref(false);
+const registrationSuccess = ref(false);
 
 // Variables para búsqueda de dirección
 const searchQuery = ref('');
@@ -287,7 +312,7 @@ const form = ref({
   confirmPassword: ''
 });
 
-// Lógica de Búsqueda de Direcciones (OpenStreetMap Nominatim)
+// Lógica de Búsqueda de Direcciones (OpenStreetMap)
 const searchAddress = (val) => {
   if (!val || val.length < 3) {
     searchResults.value = [];
@@ -295,13 +320,10 @@ const searchAddress = (val) => {
   }
 
   isSearchingAddress.value = true;
-  
-  // Limpiamos el timeout anterior para no saturar la API (Debounce)
   if (searchTimeout) clearTimeout(searchTimeout);
 
   searchTimeout = setTimeout(async () => {
     try {
-      // API Gratuita de OpenStreetMap para buscar en Ecuador
       const response = await fetch(
         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val)}&countrycodes=ec&limit=5`
       );
@@ -312,7 +334,7 @@ const searchAddress = (val) => {
     } finally {
       isSearchingAddress.value = false;
     }
-  }, 500); // Espera 500ms después de que dejes de escribir
+  }, 500);
 };
 
 const countryCodes = [
@@ -332,22 +354,48 @@ const passwordMatch = computed(() => {
   return () => form.value.password === form.value.confirmPassword || 'No coinciden';
 });
 
+// FUNCIÓN DE REGISTRO CONECTADA A SUPABASE
 const handleRegister = async () => {
   if (!isValid.value) return;
 
   isLoading.value = true;
-  
-  // Extraemos el nombre de la dirección si es un objeto
-  const finalData = {
-    ...form.value,
-    address: form.value.address?.display_name || form.value.address
-  };
 
-  setTimeout(() => {
+  try {
+    const direccionFinal = form.value.address?.display_name || form.value.address || 'Sin dirección';
+    const celularFinal = `${form.value.countryCode} ${form.value.phone}`;
+
+    // Enviamos a Supabase
+    // Los datos extra van en 'options.data' para que el Trigger SQL los capture
+    const { error } = await supabase.auth.signUp({
+      email: form.value.email,
+      password: form.value.password,
+      options: {
+        data: {
+          cedula: form.value.cedula,
+          nombres: form.value.fullName,
+          celular: celularFinal,
+          direccion: direccionFinal
+        }
+      }
+    });
+
+    if (error) throw error;
+
+    // ÉXITO: Mostramos animación
     isLoading.value = false;
-    console.log('Registro exitoso:', finalData);
-    router.push('/login');
-  }, 1500);
+    registrationSuccess.value = true;
+
+    // Redirigir después de 2.5 segundos
+    setTimeout(() => {
+      router.push('/login');
+    }, 2500);
+
+  } catch (error) {
+    console.error('Error al registrar:', error);
+    isLoading.value = false;
+    // Aquí puedes usar un snackbar si prefieres, por ahora un alert simple en caso de error crítico
+    alert(error.message || 'Ocurrió un error al registrarse');
+  }
 };
 </script>
 
@@ -386,12 +434,12 @@ const handleRegister = async () => {
 
 .tracking-wider {
   letter-spacing: 0.5px;
-  font-size: 0.7rem !important; /* Texto de etiquetas más pequeño */
+  font-size: 0.7rem !important; 
 }
 
 /* INPUTS COMPACTOS */
 .custom-input-gray :deep(.v-field) {
-  border-radius: 10px !important; /* Bordes menos redondeados para ahorrar espacio */
+  border-radius: 10px !important; 
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
 }
@@ -403,7 +451,7 @@ const handleRegister = async () => {
 
 .custom-input-gray :deep(input) {
   padding-top: 0; 
-  font-size: 0.9rem; /* Texto interno más pequeño */
+  font-size: 0.9rem; 
 }
 
 /* BOTONES */
@@ -424,7 +472,7 @@ const handleRegister = async () => {
 
 .gap-2 { gap: 8px; }
 
-/* ANIMACIÓN */
+/* ANIMACIÓN DE ENTRADA DEL FORMULARIO */
 .fade-in-up {
   opacity: 0;
   animation: fadeInUp 0.8s ease forwards;
@@ -433,6 +481,62 @@ const handleRegister = async () => {
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- ANIMACIONES DE ÉXITO (NUEVO) --- */
+.success-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: #4CAF50; /* Verde éxito */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  animation: pulse-green 2s infinite;
+  transform: scale(0);
+  animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.check-icon {
+  opacity: 0;
+  animation: showIcon 0.3s 0.4s forwards;
+}
+
+.fade-in-text {
+  opacity: 0;
+  transform: translateY(10px);
+  animation: fadeInUp 0.5s ease forwards;
+  animation-delay: 0.3s;
+}
+
+.delay-200 {
+  animation-delay: 0.5s;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+@keyframes showIcon {
+  from { opacity: 0; transform: scale(0.5); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes pulse-green {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.7);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 20px rgba(76, 175, 80, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
+  }
 }
 
 /* Responsive */

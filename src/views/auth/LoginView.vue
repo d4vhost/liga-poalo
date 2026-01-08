@@ -201,11 +201,12 @@ const handleLogin = async () => {
       .from('profiles')
       .select('role')
       .eq('id', authData.user.id)
-      .single();
+      .maybeSingle(); 
 
     if (profileError) throw profileError;
 
-    const userRole = profileData?.role;
+    // Si no tiene perfil (profileData es null), asumimos que es público (rol null)
+    const userRole = profileData?.role || null;
 
     // --- C) GUARDADO INTELIGENTE PARA OFFLINE ---
     // Guardamos las credenciales "correctas" para usarlas cuando no haya red
