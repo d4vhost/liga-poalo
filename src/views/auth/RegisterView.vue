@@ -274,7 +274,7 @@
               ¡Registro Exitoso!
             </h2>
             <p class="text-grey-lighten-1 fade-in-text delay-200">
-              Tu solicitud está en revisión.
+              Confirma el registro en tu bandeja de entrada o spam.
             </p>
           </div>
         </v-overlay>
