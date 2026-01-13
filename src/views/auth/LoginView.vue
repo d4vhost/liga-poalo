@@ -171,7 +171,7 @@ const rules = {
 
 // --- Lógica de Redirección ---
 const redireccionarPorRol = (role) => {
-  if (role === 'admin') router.push('/panel-admin');
+  if (role === 'administrador') router.push('/panel-admin');
   else if (role === 'arbitro') router.push('/panel-arbitro');
   else if (role === 'jugador') router.push('/panel-jugador');
   else throw new Error('NO_PERMISSION');
@@ -183,10 +183,9 @@ onMounted(async () => {
   const cachedRole = localStorage.getItem('user_role');
 
   if (data.session) {
-    if (cachedRole && ['admin', 'arbitro', 'jugador'].includes(cachedRole)) {
+    if (cachedRole && ['administrador', 'arbitro', 'jugador'].includes(cachedRole)) {
       redireccionarPorRol(cachedRole);
     } else {
-      // Limpieza silenciosa si hay sesión inválida
       await supabase.auth.signOut();
       localStorage.removeItem('user_role');
       localStorage.removeItem('offline_auth');
@@ -221,9 +220,10 @@ const handleLogin = async () => {
     const userRole = profileData?.role;
 
     // 3. Validar Permisos
-    if (!userRole || !['admin', 'arbitro', 'jugador'].includes(userRole)) {
-      // Si entra aquí, es usuario público (thedepthed)
-      await supabase.auth.signOut(); // Cerramos sesión para que no se quede "logueado a medias"
+    // ⚠️ CORRECCIÓN AQUÍ: Validamos contra 'administrador'
+    if (!userRole || !['administrador', 'arbitro', 'jugador'].includes(userRole)) {
+      // Si entra aquí, es usuario público (thedepthed) o viewer
+      await supabase.auth.signOut(); 
       throw new Error('NO_PERMISSION'); 
     }
 
@@ -240,9 +240,8 @@ const handleLogin = async () => {
   } catch (error) {
     console.error("Login Check:", error.message);
     
-    // MENSAJES PERSONALIZADOS
     if (error.message === 'NO_PERMISSION') {
-      errorMessage.value = 'Su cuenta es pública. No requiere acceso al sistema.';
+      errorMessage.value = 'Su cuenta no tiene permisos de acceso al panel.';
     } else if (error.message.includes('Invalid login')) {
       errorMessage.value = 'Credenciales incorrectas. Verifique correo y contraseña.';
     } else {

@@ -32,7 +32,7 @@ const router = createRouter({
       meta: { 
         hideLayout: true, 
         requiresAuth: true, 
-        role: 'admin' // Solo admins pueden entrar aquí
+        role: 'administrador' // Solo admins pueden entrar aquí
       },
       children: [
         { 
