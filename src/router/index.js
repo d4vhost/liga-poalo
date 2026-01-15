@@ -34,10 +34,11 @@ const router = createRouter({
         requiresAuth: true, 
         role: 'administrador' // Solo admins pueden entrar aquí
       },
-      children: [
+        children: [
         { 
           path: '', 
-          redirect: { name: 'admin-users' } 
+          name: 'admin-dashboard',
+          component: () => import('../views/admin/DashboardView.vue') 
         },
         {
           path: 'usuarios',
