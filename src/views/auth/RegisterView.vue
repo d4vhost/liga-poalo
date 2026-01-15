@@ -66,12 +66,12 @@
                 </v-col>
                 <v-col cols="12" sm="8">
                   <div class="text-caption text-grey-lighten-3 mb-1 font-weight-bold ml-1 tracking-wider">
-                    NOMBRES Y APELLIDOS
+                    APELLIDOS Y NOMBRES COMPLETOS
                   </div>
                   <v-text-field
                     v-model="form.fullName"
                     :rules="[rules.required]"
-                    placeholder="Ej: Juan Pérez"
+                    placeholder="Ej: Pérez Sanchez Juan Carlos"
                     variant="solo-filled"
                     bg-color="rgba(255,255,255,0.06)"
                     color="white"
