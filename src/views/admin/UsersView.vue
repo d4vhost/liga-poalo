@@ -9,25 +9,32 @@ const loading = ref(false)
 const search = ref('')
 const showModal = ref(false)
 const selectedUser = ref(null)
+const currentFilter = ref('todos') // Nuevo estado para el filtro
 
 // Paginación
 const page = ref(1)
-const itemsPerPage = ref(8) // Forzamos 8
+const itemsPerPage = ref(8) 
 
-// Computed: Calcula cuántas filas vacías (ghosts) faltan para completar las 8
+// COMPUTED: Filtrado de usuarios por rol (pestañas)
+const filteredUsers = computed(() => {
+  if (currentFilter.value === 'todos') {
+    return users.value
+  }
+  // Filtramos por el rol exacto
+  return users.value.filter(user => user.role === currentFilter.value)
+})
+
+// COMPUTED: Calcula filas vacías (Ghost Rows) basado en la lista FILTRADA
 const ghostRows = computed(() => {
-  const totalUsers = users.value.length
+  // Nota: Usamos filteredUsers, no users, para que el relleno funcione con el filtro activo
+  const totalUsers = filteredUsers.value.length 
   
-  // Si no hay usuarios, mostramos 8 vacías
   if (totalUsers === 0) return itemsPerPage.value
 
-  // Calculamos total de páginas
   const totalPages = Math.ceil(totalUsers / itemsPerPage.value)
 
-  // Si no estamos en la última página, no necesitamos ghosts (está llena)
   if (page.value < totalPages) return 0
 
-  // Si estamos en la última página, calculamos el remanente
   const remainder = totalUsers % itemsPerPage.value
   return remainder === 0 ? 0 : itemsPerPage.value - remainder
 })
@@ -48,6 +55,7 @@ const fetchUsers = async () => {
     .from('profiles')
     .select('*')
     .order('created_at', { ascending: false })
+  
   if (!error) users.value = data
   loading.value = false
 }
@@ -65,13 +73,14 @@ const handleUserUpdated = () => {
 onMounted(() => fetchUsers())
 
 // Colores
-const getRoleColor = (role) => ({ administrador: 'purple-accent-2', arbitro: 'orange-accent-2', jugador: 'blue-accent-2' }[role] || 'grey')
+const getRoleColor = (role) => ({ administrador: 'purple-accent-2', arbitro: 'orange-accent-2', jugador: 'blue-accent-2', viewer: 'grey' }[role] || 'grey')
 const getStatusColor = (status) => ({ activo: 'green', pendiente: 'amber', rechazado: 'red', suspendido: 'grey' }[status] || 'grey')
 </script>
 
 <template>
   <div class="h-100 d-flex flex-column">
-    <div class="d-flex align-center justify-space-between mb-6">
+    
+    <div class="d-flex align-center justify-space-between mb-4">
       <h2 class="text-h5 font-weight-bold text-white tracking-wide">
         DIRECTORIO DE USUARIOS
       </h2>
@@ -87,11 +96,38 @@ const getStatusColor = (status) => ({ activo: 'green', pendiente: 'amber', recha
       ></v-text-field>
     </div>
 
+    <div class="mb-4">
+      <v-btn-toggle
+        v-model="currentFilter"
+        mandatory
+        rounded="lg"
+        class="filter-toggle"
+        density="compact"
+      >
+        <v-btn value="todos" class="text-capitalize text-body-2" size="small" variant="text" color="white">
+          Todos
+          <v-chip size="x-small" class="ml-2 bg-grey-darken-3 text-white">{{ users.length }}</v-chip>
+        </v-btn>
+
+        <v-btn value="administrador" class="text-capitalize text-body-2" size="small" variant="text" color="purple-accent-2">
+          <v-icon start size="small">mdi-shield-crown</v-icon> Admin
+        </v-btn>
+
+        <v-btn value="arbitro" class="text-capitalize text-body-2" size="small" variant="text" color="orange-accent-2">
+          <v-icon start size="small">mdi-whistle</v-icon> Árbitros
+        </v-btn>
+
+        <v-btn value="jugador" class="text-capitalize text-body-2" size="small" variant="text" color="blue-accent-2">
+          <v-icon start size="small">mdi-soccer</v-icon> Jugadores
+        </v-btn>
+      </v-btn-toggle>
+    </div>
+
     <v-card class="card-dark-outline" elevation="0">
       <v-data-table
         v-model:page="page"
         :headers="headers"
-        :items="users"
+        :items="filteredUsers" 
         :items-per-page="itemsPerPage"
         :search="search"
         :loading="loading"
@@ -171,13 +207,23 @@ const getStatusColor = (status) => ({ activo: 'green', pendiente: 'amber', recha
   letter-spacing: 1px;
 }
 
-/* Altura fija para las filas fantasmas igual que las reales */
+/* Estilo para los botones de filtro */
+.filter-toggle {
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Altura fija para las filas fantasmas */
 .ghost-content {
-  height: 64px; /* Ajustado para coincidir con la altura visual de las filas con avatar */
+  height: 64px; 
 }
 
 .border-bottom-subtle {
   border-bottom: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+.border-subtle {
+    border: 1px solid rgba(255,255,255,0.1);
 }
 
 /* Inputs */
@@ -187,7 +233,7 @@ const getStatusColor = (status) => ({ activo: 'green', pendiente: 'amber', recha
   border-color: rgba(255, 255, 255, 0.2) !important;
 }
 
-/* Asegurar que el paginador se vea bien en oscuro */
+/* Paginador oscuro */
 :deep(.v-data-table-footer) {
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
