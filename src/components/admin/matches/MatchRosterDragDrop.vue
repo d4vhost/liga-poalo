@@ -1,461 +1,375 @@
 <script setup>
-import { ref, computed } from 'vue'
-import MatchFieldTactical from './MatchFieldTactical.vue'
+import { ref, onMounted } from 'vue';
+import { supabase } from '../../../services/supabase'; 
+import MatchFieldTactical from './MatchFieldTactical.vue';
 
-const props = defineProps({ 
-  modelValue: Object, 
-  playersPool: Array 
-})
-const emit = defineEmits(['update:modelValue', 'notify'])
+// --- ESTADO ---
+const availablePlayers = ref([]);
+const loading = ref(true);
+const showPositionModal = ref(false);
+const selectedPlayerForAssignment = ref(null); // Jugador esperando posición
 
-const LIMIT = 11
-const playerSearch = ref('')
-const currentTeamStep = ref('A') // 'A' o 'B'
-
-// --- COMPUTED ---
-const filteredPlayers = computed(() => {
-  const term = playerSearch.value.toLowerCase()
-  const assignedIds = [...props.modelValue.team_a_roster, ...props.modelValue.team_b_roster].map(p => p.id)
-  return props.playersPool.filter(p => 
-    !assignedIds.includes(p.id) && 
-    (p.nombres?.toLowerCase().includes(term) || p.cedula?.includes(term))
-  )
-})
-
-const currentTeamRoster = computed(() => {
-  return currentTeamStep.value === 'A' 
-    ? props.modelValue.team_a_roster 
-    : props.modelValue.team_b_roster
-})
-
-const currentTeamName = computed(() => {
-  return currentTeamStep.value === 'A' 
-    ? props.modelValue.team_a_name 
-    : props.modelValue.team_b_name
-})
-
-const canContinueToTeamB = computed(() => {
-  return props.modelValue.team_a_roster.length === LIMIT
-})
-
-// --- ACCIONES ---
-function assignPlayerToCurrentTeam(player) {
-  const team = currentTeamStep.value
-  const isTeamA = team === 'A'
-  const roster = isTeamA ? props.modelValue.team_a_roster : props.modelValue.team_b_roster
+// --- FORMACIÓN FIJA 4-3-3 (COORDENADAS ALINEADAS) ---
+// type: Define el grupo para la asignación automática
+const formationSlots = ref([
+  // PORTERO (Centrado abajo)
+  { id: 'gk', type: 'gk', label: 'POR', x: 50, y: 88, player: null },
   
-  if (roster.length >= LIMIT) {
-    emit('notify', { text: `Límite alcanzado (${LIMIT} jugadores)`, color: 'warning' })
-    return
+  // DEFENSAS (Línea recta Y=72, distribuidos equitativamente X=20,40,60,80)
+  { id: 'df1', type: 'df', label: 'DEF', x: 20, y: 72, player: null },
+  { id: 'df2', type: 'df', label: 'DEF', x: 40, y: 72, player: null },
+  { id: 'df3', type: 'df', label: 'DEF', x: 60, y: 72, player: null },
+  { id: 'df4', type: 'df', label: 'DEF', x: 80, y: 72, player: null },
+
+  // MEDIOS (Línea recta Y=48, centrados X=30,50,70)
+  { id: 'mf1', type: 'mf', label: 'MED', x: 30, y: 48, player: null },
+  { id: 'mf2', type: 'mf', label: 'MED', x: 50, y: 48, player: null },
+  { id: 'mf3', type: 'mf', label: 'MED', x: 70, y: 48, player: null },
+
+  // DELANTEROS (Línea recta Y=20, centrados X=30,50,70)
+  { id: 'fw1', type: 'fw', label: 'DEL', x: 30, y: 20, player: null },
+  { id: 'fw2', type: 'fw', label: 'DEL', x: 50, y: 20, player: null },
+  { id: 'fw3', type: 'fw', label: 'DEL', x: 70, y: 20, player: null },
+]);
+
+// --- CARGA DE DATOS ---
+onMounted(async () => {
+  try {
+    loading.value = true;
+    const { data, error } = await supabase
+      .from('profiles') 
+      .select('*')
+      .order('nombres', { ascending: true });
+
+    if (error) throw error;
+    if (data) availablePlayers.value = data;
+  } catch (error) {
+    console.error('Error cargando jugadores:', error);
+  } finally {
+    loading.value = false;
   }
-  
-  const newRoster = [...roster, { 
-    ...player, 
-    fieldX: 50, 
-    fieldY: isTeamA ? 70 : 30 // Posición inicial
-  }]
-  
-  emit('update:modelValue', { 
-    ...props.modelValue, 
-    [isTeamA ? 'team_a_roster' : 'team_b_roster']: newRoster 
-  })
-  
-  playerSearch.value = ''
-}
+});
 
-function updateCurrentTeamRoster(newRoster) {
-  const key = currentTeamStep.value === 'A' ? 'team_a_roster' : 'team_b_roster'
-  emit('update:modelValue', { ...props.modelValue, [key]: newRoster })
-}
+// --- HELPERS ---
+const getDisplayName = (player) => player.nombres || player.email?.split('@')[0] || 'Jugador';
+const getDisplayNumber = (player) => player.numero || '0'; // Cambiar si tienes columna numero
 
-function removePlayer(playerId) {
-  const team = currentTeamStep.value
-  const isTeamA = team === 'A'
-  const roster = isTeamA ? props.modelValue.team_a_roster : props.modelValue.team_b_roster
-  const newRoster = roster.filter(p => p.id !== playerId)
-  emit('update:modelValue', { 
-    ...props.modelValue, 
-    [isTeamA ? 'team_a_roster' : 'team_b_roster']: newRoster 
-  })
-}
+// --- LÓGICA DE ASIGNACIÓN (MODAL) ---
 
-// Drag desde el pool
-function startDragFromPool(event, player) {
-  event.dataTransfer.effectAllowed = 'copy'
-  event.dataTransfer.setData('player', JSON.stringify(player))
-}
+// 1. Abrir modal al hacer clic en "+"
+const promptPositionSelection = (player) => {
+  selectedPlayerForAssignment.value = player;
+  showPositionModal.value = true;
+};
 
-// Drop en campo
-function dropOnField(event) {
-  event.preventDefault()
-  const playerData = event.dataTransfer.getData('player')
-  if (playerData) {
-    const player = JSON.parse(playerData)
-    assignPlayerToCurrentTeam(player)
+// 2. Asignar a la primera ranura vacía del tipo seleccionado
+const assignToPosition = (type) => {
+  if (!selectedPlayerForAssignment.value) return;
+
+  // Buscar slots del tipo seleccionado (ej: 'df') que estén vacíos
+  const targetSlot = formationSlots.value.find(slot => slot.type === type && slot.player === null);
+
+  if (targetSlot) {
+    // Asignar jugador
+    targetSlot.player = { ...selectedPlayerForAssignment.value };
+    
+    // Quitar de la lista de disponibles
+    availablePlayers.value = availablePlayers.value.filter(p => p.id !== selectedPlayerForAssignment.value.id);
+    
+    // Cerrar modal
+    closeModal();
+  } else {
+    alert(`No hay espacios disponibles para ${type.toUpperCase()}. Libera una posición primero.`);
   }
-}
+};
 
-function allowDrop(event) {
-  event.preventDefault()
-}
+const closeModal = () => {
+  showPositionModal.value = false;
+  selectedPlayerForAssignment.value = null;
+};
 
-function goToTeamB() {
-  if (canContinueToTeamB.value) {
-    currentTeamStep.value = 'B'
-  }
-}
+// --- QUITAR JUGADOR DE CANCHA ---
+const removePlayerFromSlot = (index) => {
+  const slot = formationSlots.value[index];
+  if (!slot.player) return;
 
-function backToTeamA() {
-  currentTeamStep.value = 'A'
-}
+  // Devolver a lista
+  availablePlayers.value.push(slot.player);
+  // Limpiar slot
+  slot.player = null;
+};
+
+// --- GUARDAR ---
+const saveLineup = () => {
+  const lineup = formationSlots.value
+    .filter(slot => slot.player !== null)
+    .map(slot => ({
+      position_label: slot.label,
+      player_id: slot.player.id,
+      player_name: getDisplayName(slot.player),
+      x: slot.x,
+      y: slot.y
+    }));
+  
+  console.log("Alineación:", lineup);
+  alert("Alineación guardada en consola.");
+};
 </script>
 
 <template>
-  <div class="roster-step-container">
+  <div class="roster-layout">
     
-    <!-- INDICADOR DE PROGRESO -->
-    <div class="progress-indicator">
-      <div class="step-badge" :class="{ active: currentTeamStep === 'A', completed: canContinueToTeamB }">
-        <v-icon v-if="canContinueToTeamB" color="white" size="20">mdi-check</v-icon>
-        <span v-else class="step-number">1</span>
-      </div>
-      <div class="step-info">
-        <span class="step-label">{{ currentTeamStep === 'A' ? 'CONFIGURANDO' : 'COMPLETADO' }}</span>
-        <span class="step-title">{{ modelValue.team_a_name || 'Equipo Local' }}</span>
-      </div>
-
-      <div class="step-divider"></div>
-
-      <div class="step-badge" :class="{ active: currentTeamStep === 'B', disabled: !canContinueToTeamB }">
-        <span class="step-number">2</span>
-      </div>
-      <div class="step-info">
-        <span class="step-label">{{ currentTeamStep === 'B' ? 'CONFIGURANDO' : 'PENDIENTE' }}</span>
-        <span class="step-title">{{ modelValue.team_b_name || 'Equipo Visitante' }}</span>
+    <div v-if="showPositionModal" class="modal-overlay" @click.self="closeModal">
+      <div class="modal-content">
+        <h3>¿Posición para {{ getDisplayName(selectedPlayerForAssignment) }}?</h3>
+        <div class="position-options">
+          <button class="btn-pos gk" @click="assignToPosition('gk')">Portero</button>
+          <button class="btn-pos df" @click="assignToPosition('df')">Defensa</button>
+          <button class="btn-pos mf" @click="assignToPosition('mf')">Medio</button>
+          <button class="btn-pos fw" @click="assignToPosition('fw')">Delantero</button>
+        </div>
+        <button class="btn-cancel" @click="closeModal">Cancelar</button>
       </div>
     </div>
 
-    <div class="content-wrapper">
+    <div class="sidebar">
+      <div class="sidebar-header">
+        <h3>Plantilla</h3>
+        <span class="badge">{{ availablePlayers.length }}</span>
+      </div>
       
-      <!-- POOL DE JUGADORES (IZQUIERDA) -->
-      <div class="players-pool-section">
-        <div class="pool-header">
-          <div class="text-center mb-3">
-            <v-icon size="40" color="grey-lighten-1" class="mb-2">mdi-account-group</v-icon>
-            <h4 class="text-h6 font-weight-bold text-white mb-1">Jugadores Disponibles</h4>
-            <p class="text-caption text-grey mb-0">{{ filteredPlayers.length }} en pool</p>
+      <div class="players-scroll">
+        <div 
+          v-for="player in availablePlayers" 
+          :key="player.id" 
+          class="player-item"
+        >
+          <div class="player-info">
+            <span class="p-num">{{ getDisplayNumber(player) }}</span>
+            <span class="p-name">{{ getDisplayName(player) }}</span>
           </div>
-          
-          <v-text-field 
-            v-model="playerSearch" 
-            placeholder="Buscar por nombre o cédula..." 
-            prepend-inner-icon="mdi-magnify" 
-            density="compact" 
-            variant="solo-filled" 
-            bg-color="rgba(255,255,255,0.05)" 
-            class="search-input" 
-            hide-details 
-            clearable
-          ></v-text-field>
+          <button class="btn-add" @click="promptPositionSelection(player)">+</button>
         </div>
+      </div>
+    </div>
 
-        <v-list bg-color="transparent" class="players-list">
-          <v-list-item 
-            v-for="p in filteredPlayers" 
-            :key="p.id" 
-            class="player-pool-item mb-2"
-            draggable="true"
-            @dragstart="startDragFromPool($event, p)"
-          >
-            <template v-slot:prepend>
-              <v-avatar color="grey-darken-3" size="40" class="mr-3">
-                <span class="text-body-2 font-weight-bold text-white">{{ p.nombres?.charAt(0) }}</span>
-              </v-avatar>
-            </template>
+    <div class="field-area">
+      <div class="field-header">
+        <h3>Alineación 4-3-3</h3>
+        <button class="btn-save" @click="saveLineup">Guardar</button>
+      </div>
+
+      <MatchFieldTactical>
+        <div
+          v-for="(slot, index) in formationSlots"
+          :key="slot.id"
+          class="tactical-slot"
+          :class="{ 'occupied': slot.player }"
+          :style="{ left: slot.x + '%', top: slot.y + '%' }"
+        >
+          <div v-if="!slot.player" class="empty-slot-content">
+            <span class="slot-label">{{ slot.label }}</span>
+          </div>
+
+          <div v-else class="player-token">
+            <div class="token-circle">
+              <span class="t-num">{{ getDisplayNumber(slot.player) }}</span>
+            </div>
+            <span class="t-name">{{ getDisplayName(slot.player).split(' ')[0] }}</span>
             
-            <v-list-item-title class="text-body-2 font-weight-medium text-white">
-              {{ p.nombres }}
-            </v-list-item-title>
-            <v-list-item-subtitle class="text-caption text-grey">
-              CI: {{ p.cedula }}
-            </v-list-item-subtitle>
-
-            <template v-slot:append>
-              <v-btn 
-                icon="mdi-plus" 
-                size="small" 
-                :color="currentTeamStep === 'A' ? 'blue-lighten-2' : 'orange-lighten-2'" 
-                variant="tonal"
-                @click="assignPlayerToCurrentTeam(p)"
-                :title="`Agregar a ${currentTeamName}`"
-              ></v-btn>
-            </template>
-          </v-list-item>
-
-          <v-list-item v-if="filteredPlayers.length === 0" class="text-center py-8">
-            <v-list-item-title class="text-grey-darken-1">
-              No hay jugadores disponibles
-            </v-list-item-title>
-          </v-list-item>
-        </v-list>
-      </div>
-
-      <!-- CAMPO TÁCTICO (DERECHA) -->
-      <div class="tactical-section">
-        
-        <!-- CAMPO DEL EQUIPO A -->
-        <div 
-          v-show="currentTeamStep === 'A'"
-          class="field-wrapper"
-          @drop="dropOnField"
-          @dragover="allowDrop"
-        >
-          <MatchFieldTactical
-            :team-name="modelValue.team_a_name || 'EQUIPO LOCAL'"
-            :roster="modelValue.team_a_roster"
-            team-side="A"
-            @update:roster="updateCurrentTeamRoster"
-            @remove-player="removePlayer"
-          />
-
-          <!-- Botón para continuar -->
-          <div class="navigation-footer">
-            <v-btn
-              block
-              color="white"
-              size="large"
-              height="56"
-              :disabled="!canContinueToTeamB"
-              @click="goToTeamB"
-              class="text-black font-weight-bold"
-              append-icon="mdi-arrow-right"
-            >
-              Continuar a {{ modelValue.team_b_name || 'Equipo Visitante' }}
-            </v-btn>
-            <p v-if="!canContinueToTeamB" class="text-caption text-orange-darken-1 text-center mt-2 mb-0">
-              Debes seleccionar exactamente 11 jugadores ({{ modelValue.team_a_roster.length }}/11)
-            </p>
+            <button class="btn-remove" @click="removePlayerFromSlot(index)">×</button>
           </div>
         </div>
-
-        <!-- CAMPO DEL EQUIPO B -->
-        <div 
-          v-show="currentTeamStep === 'B'"
-          class="field-wrapper"
-          @drop="dropOnField"
-          @dragover="allowDrop"
-        >
-          <MatchFieldTactical
-            :team-name="modelValue.team_b_name || 'EQUIPO VISITANTE'"
-            :roster="modelValue.team_b_roster"
-            team-side="B"
-            @update:roster="updateCurrentTeamRoster"
-            @remove-player="removePlayer"
-          />
-
-          <!-- Botón para volver -->
-          <div class="navigation-footer">
-            <v-btn
-              variant="outlined"
-              color="white"
-              size="large"
-              height="48"
-              @click="backToTeamA"
-              prepend-icon="mdi-arrow-left"
-              class="font-weight-bold"
-            >
-              Volver a {{ modelValue.team_a_name || 'Equipo Local' }}
-            </v-btn>
-          </div>
-        </div>
-
-      </div>
-
+      </MatchFieldTactical>
     </div>
 
   </div>
 </template>
 
 <style scoped>
-.roster-step-container {
+.roster-layout {
   display: flex;
-  flex-direction: column;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.2);
-  padding: 20px;
-}
-
-/* INDICADOR DE PROGRESO */
-.progress-indicator {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  margin-bottom: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.step-badge {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.3s;
-}
-
-.step-badge.active {
-  background: white;
-  border-color: white;
-  transform: scale(1.1);
-}
-
-.step-badge.completed {
-  background: #4CAF50;
-  border-color: #4CAF50;
-}
-
-.step-badge.disabled {
-  opacity: 0.3;
-}
-
-.step-number {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: white;
-}
-
-.step-badge.active .step-number {
-  color: black;
-}
-
-.step-info {
-  display: flex;
-  flex-direction: column;
-  margin-left: 12px;
-  margin-right: 20px;
-}
-
-.step-label {
-  font-size: 0.65rem;
-  font-weight: bold;
-  color: rgba(255, 255, 255, 0.5);
-  letter-spacing: 1px;
-}
-
-.step-title {
-  font-size: 0.9rem;
-  font-weight: bold;
-  color: white;
-}
-
-.step-divider {
-  width: 60px;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.2);
-  margin: 0 16px;
-}
-
-/* CONTENEDOR PRINCIPAL */
-.content-wrapper {
-  display: grid;
-  grid-template-columns: 340px 1fr;
   gap: 20px;
-  flex: 1;
-  overflow: hidden;
+  height: 85vh;
+  padding: 10px;
+  background-color: #f4f6f8;
+  position: relative;
 }
 
-/* POOL DE JUGADORES */
-.players-pool-section {
+/* --- MODAL --- */
+.modal-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.6);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+}
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  width: 300px;
+}
+.position-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 20px 0;
+}
+.btn-pos {
+  padding: 15px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  color: white;
+  transition: transform 0.1s;
+}
+.btn-pos:hover { transform: scale(1.05); }
+.btn-pos.gk { background-color: #f1c40f; color: #333; }
+.btn-pos.df { background-color: #3498db; }
+.btn-pos.mf { background-color: #2ecc71; }
+.btn-pos.fw { background-color: #e74c3c; }
+
+.btn-cancel {
+  background: transparent;
+  border: 1px solid #ccc;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+/* --- SIDEBAR --- */
+.sidebar {
+  width: 280px;
+  background: white;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  border: 1px solid #ddd;
 }
-
-.pool-header {
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  flex-shrink: 0;
+.sidebar-header {
+  padding: 15px;
+  background: #2c3e50;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-
-.players-list {
+.players-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 10px;
+}
+.player-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  margin-bottom: 5px;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+.player-info { display: flex; gap: 8px; align-items: center; }
+.p-num { font-weight: bold; color: #7f8c8d; width: 25px; }
+.p-name { font-weight: 600; font-size: 0.9rem; color: #2c3e50; }
+
+.btn-add {
+  background: #27ae60;
+  color: white;
+  border: none;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.btn-add:hover { background: #219653; }
+
+/* --- CANCHA --- */
+.field-area {
+  flex: 1;
+  background: white;
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.field-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.btn-save {
+  background: #2980b9;
+  color: white;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.players-list::-webkit-scrollbar {
-  width: 6px;
+/* --- SLOTS --- */
+.tactical-slot {
+  position: absolute;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%, -50%); /* Centrado perfecto en la coordenada */
+  z-index: 10;
 }
+.empty-slot-content {
+  width: 100%; height: 100%;
+  border: 2px dashed rgba(255,255,255,0.7);
+  background: rgba(0,0,0,0.3);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+}
+.slot-label { color: white; font-weight: bold; font-size: 0.7rem; }
 
-.players-list::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
+/* --- PLAYER TOKEN (Estilo Visual) --- */
+.player-token {
+  width: 100%; height: 100%;
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+}
+.token-circle {
+  width: 45px; height: 45px;
+  background: radial-gradient(circle at 30% 30%, #fff, #ecf0f1);
+  border: 3px solid #2c3e50;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+}
+.t-num { font-weight: 900; color: #333; }
+.t-name {
+  background: rgba(0,0,0,0.7);
+  color: white;
+  padding: 2px 5px;
   border-radius: 3px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  position: absolute;
+  bottom: -18px;
 }
-
-.player-pool-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  transition: all 0.2s;
-  cursor: grab;
+.btn-remove {
+  position: absolute;
+  top: -5px; right: -5px;
+  background: #c0392b;
+  color: white;
+  border: none;
+  width: 18px; height: 18px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: none;
 }
-
-.player-pool-item:active {
-  cursor: grabbing;
-}
-
-.player-pool-item:hover {
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
-}
-
-/* SECCIÓN TÁCTICA */
-.tactical-section {
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.field-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  overflow: hidden;
-}
-
-.navigation-footer {
-  padding: 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  flex-shrink: 0;
-}
-
-/* RESPONSIVE */
-@media (max-width: 1400px) {
-  .content-wrapper {
-    grid-template-columns: 300px 1fr;
-  }
-}
-
-@media (max-width: 1200px) {
-  .content-wrapper {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto 1fr;
-  }
-
-  .players-pool-section {
-    max-height: 300px;
-  }
-}
+.player-token:hover .btn-remove { display: flex; align-items: center; justify-content: center; }
 </style>
