@@ -1,5 +1,6 @@
 <script setup>
 import { ref, computed } from 'vue'
+import estadioImage from '../../../images/estadio_alineacion.jpg'
 
 const props = defineProps({
   teamName: String,
@@ -29,7 +30,9 @@ function onFieldDrop(event) {
   event.preventDefault()
   if (!draggedPlayer.value) return
 
-  const field = event.currentTarget
+  const field = event.currentTarget.querySelector('.field-content')
+  if (!field) return
+  
   const rect = field.getBoundingClientRect()
   
   // Calcular posición en porcentaje
@@ -60,224 +63,131 @@ const teamColor = computed(() => props.teamSide === 'A' ? '#42A5F5' : '#FF7043')
 </script>
 
 <template>
-  <div class="tactical-board">
+  <div class="tactical-board-single">
     <!-- Header -->
     <div class="board-header">
       <div class="d-flex align-center">
-        <v-icon :color="teamColor" class="mr-2">mdi-shield-outline</v-icon>
-        <span class="text-subtitle-1 font-weight-bold text-white">{{ teamName }}</span>
+        <v-icon :color="teamColor" class="mr-2" size="28">mdi-shield-outline</v-icon>
+        <span class="text-h6 font-weight-bold text-white">{{ teamName }}</span>
       </div>
       <v-chip size="small" :color="playersOnField.length === 11 ? 'green' : 'grey'" variant="flat">
-        {{ playersOnField.length }}/11
+        {{ playersOnField.length }}/11 Jugadores
       </v-chip>
     </div>
 
-    <!-- Campo de Fútbol -->
+    <!-- Campo de Fútbol con Imagen Real -->
     <div 
-      class="football-field" 
+      class="football-field-real" 
+      :style="{ backgroundImage: `url(${estadioImage})` }"
       @drop="onFieldDrop"
       @dragover="allowDrop"
     >
-      <!-- Líneas del campo -->
-      <div class="field-lines">
-        <!-- Área grande superior -->
-        <div class="penalty-box top">
-          <div class="goal-box top"></div>
-          <div class="goal top"></div>
-        </div>
+      <!-- Contenedor interno para mantener proporción -->
+      <div class="field-content">
         
-        <!-- Círculo central -->
-        <div class="center-circle">
-          <div class="center-spot"></div>
-        </div>
-        <div class="center-line"></div>
-        
-        <!-- Área grande inferior -->
-        <div class="penalty-box bottom">
-          <div class="goal-box bottom"></div>
-          <div class="goal bottom"></div>
-        </div>
-      </div>
+        <!-- Overlay oscuro para mejor contraste -->
+        <div class="field-overlay"></div>
 
-      <!-- Jugadores en el campo -->
-      <div 
-        v-for="player in playersOnField" 
-        :key="player.id"
-        class="player-marker"
-        :style="{ 
-          left: `${player.fieldX}%`, 
-          top: `${player.fieldY}%`,
-          '--team-color': teamColor
-        }"
-        draggable="true"
-        @dragstart="startDrag($event, player)"
-      >
-        <div class="player-circle">
-          <span class="player-number">{{ player.nombres?.split(' ')[0]?.charAt(0) || '?' }}</span>
+        <!-- Jugadores en el campo -->
+        <div 
+          v-for="player in playersOnField" 
+          :key="player.id"
+          class="player-marker"
+          :style="{ 
+            left: `${player.fieldX}%`, 
+            top: `${player.fieldY}%`,
+            '--team-color': teamColor
+          }"
+          draggable="true"
+          @dragstart="startDrag($event, player)"
+        >
+          <div class="player-circle">
+            <span class="player-initial">{{ player.nombres?.split(' ')[0]?.charAt(0) || '?' }}</span>
+          </div>
+          <div class="player-name-tag">{{ player.nombres?.split(' ')[0] || 'Sin nombre' }}</div>
+          <v-btn 
+            icon="mdi-close" 
+            size="x-small" 
+            variant="text" 
+            color="red" 
+            class="remove-btn"
+            @click.stop="removeFromField(player)"
+          ></v-btn>
         </div>
-        <div class="player-name">{{ player.nombres?.split(' ')[0] || 'Sin nombre' }}</div>
-        <v-btn 
-          icon="mdi-close" 
-          size="x-small" 
-          variant="text" 
-          color="red" 
-          class="remove-btn"
-          @click.stop="removeFromField(player)"
-        ></v-btn>
-      </div>
 
-      <!-- Mensaje cuando está vacío -->
-      <div v-if="playersOnField.length === 0" class="empty-field-message">
-        <v-icon size="40" color="grey-darken-1" class="mb-2">mdi-drag</v-icon>
-        <p class="text-body-2 text-grey-darken-1">Arrastra jugadores aquí</p>
+        <!-- Mensaje cuando está vacío -->
+        <div v-if="playersOnField.length === 0" class="empty-field-message">
+          <div class="empty-content">
+            <v-icon size="56" color="white" class="mb-3">mdi-drag</v-icon>
+            <p class="text-h6 font-weight-bold text-white mb-1">Arrastra jugadores aquí</p>
+            <p class="text-body-2 text-grey-lighten-2">Posiciona a los 11 jugadores en el campo</p>
+          </div>
+        </div>
       </div>
     </div>
 
     <!-- Instrucciones -->
     <div class="instructions">
-      <v-icon size="small" color="blue-grey-lighten-2" class="mr-2">mdi-information-outline</v-icon>
-      <span class="text-caption text-grey-lighten-1">Arrastra jugadores desde el pool para posicionarlos en el campo</span>
+      <v-icon size="small" color="blue-lighten-2" class="mr-2">mdi-information-outline</v-icon>
+      <span class="text-caption text-grey-lighten-1">Arrastra y suelta los jugadores para posicionarlos estratégicamente</span>
     </div>
   </div>
 </template>
 
 <style scoped>
-.tactical-board {
+.tactical-board-single {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: rgba(255, 255, 255, 0.02);
-  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 16px;
   overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .board-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 20px 24px;
+  background: rgba(0, 0, 0, 0.6);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
 }
 
-.football-field {
+.football-field-real {
   flex: 1;
   position: relative;
-  background: 
-    linear-gradient(90deg, rgba(34, 139, 34, 0.9) 0%, rgba(50, 205, 50, 0.8) 50%, rgba(34, 139, 34, 0.9) 100%),
-    repeating-linear-gradient(0deg, transparent, transparent 10%, rgba(255, 255, 255, 0.03) 10%, rgba(255, 255, 255, 0.03) 20%);
-  margin: 12px;
-  border-radius: 8px;
+  background-color: #1a1a1a;
+  margin: 0;
   overflow: hidden;
-  min-height: 600px;
+  min-height: 850px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
 }
 
-/* Líneas del campo */
-.field-lines {
+.field-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  max-width: 700px;
+  max-height: 1000px;
+  background-image: inherit;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.field-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
   pointer-events: none;
-}
-
-.center-line {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  background: rgba(255, 255, 255, 0.4);
-  transform: translateY(-50%);
-}
-
-.center-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 120px;
-  height: 120px;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.center-spot {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.penalty-box {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 20%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-.penalty-box.top {
-  top: 0;
-  border-top: none;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-}
-
-.penalty-box.bottom {
-  bottom: 0;
-  border-bottom: none;
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-}
-
-.goal-box {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 50%;
-  height: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.4);
-}
-
-.goal-box.top {
-  top: 0;
-  border-top: none;
-}
-
-.goal-box.bottom {
-  bottom: 0;
-  border-bottom: none;
-}
-
-.goal {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 30%;
-  height: 30px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-.goal.top {
-  top: -30px;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom: none;
-}
-
-.goal.bottom {
-  bottom: -30px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-  border-top: none;
 }
 
 /* Jugadores en el campo */
@@ -287,55 +197,60 @@ const teamColor = computed(() => props.teamSide === 'A' ? '#42A5F5' : '#FF7043')
   cursor: move;
   user-select: none;
   z-index: 10;
+  transition: transform 0.1s ease;
 }
 
 .player-circle {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: var(--team-color);
-  border: 3px solid white;
+  border: 4px solid white;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  transition: transform 0.2s;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  transition: all 0.2s;
+  position: relative;
 }
 
 .player-marker:hover .player-circle {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.8);
 }
 
-.player-number {
-  font-size: 1.2rem;
-  font-weight: bold;
+.player-initial {
+  font-size: 1.4rem;
+  font-weight: 900;
   color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7);
 }
 
-.player-name {
+.player-name-tag {
   position: absolute;
-  top: 60px;
+  top: 66px;
   left: 50%;
   transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.9);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 0.7rem;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
   font-weight: bold;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .remove-btn {
   position: absolute;
-  top: -8px;
-  right: -8px;
-  background: rgba(0, 0, 0, 0.7) !important;
+  top: -10px;
+  right: -10px;
+  background: rgba(244, 67, 54, 0.95) !important;
   opacity: 0;
   transition: opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
 .player-marker:hover .remove-btn {
@@ -349,14 +264,23 @@ const teamColor = computed(() => props.teamSide === 'A' ? '#42A5F5' : '#FF7043')
   transform: translate(-50%, -50%);
   text-align: center;
   pointer-events: none;
+  z-index: 5;
+}
+
+.empty-content {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 40px 60px;
+  border-radius: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.3);
 }
 
 .instructions {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 14px;
+  background: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>
