@@ -3,7 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useMatches } from '../../composables/useMatches' 
 import MatchesTable from '../../components/admin/matches/MatchesTable.vue'
 import MatchInfoForm from '../../components/admin/matches/MatchInfoForm.vue'
-import MatchRosterEditor from '../../components/admin/matches/MatchRosterEditor.vue'
+import MatchRosterDragDrop from '../../components/admin/matches/MatchRosterDragDrop.vue'
 
 // --- LÓGICA ---
 const { matches, players, loading, saving, fetchMatches, fetchPlayers, saveMatch } = useMatches()
@@ -11,7 +11,7 @@ const dialog = ref(false)
 const step = ref(1)
 const snackbar = ref({ show: false, text: '', color: 'success' })
 
-// HORA ECUADOR (Lógica Nueva)
+// HORA ECUADOR
 function getEcuadorTime() {
   return new Date().toLocaleTimeString('es-EC', {
     timeZone: 'America/Guayaquil',
@@ -19,7 +19,7 @@ function getEcuadorTime() {
   })
 }
 
-// MODELO (Lógica Nueva 11v11)
+// MODELO
 const defaultMatch = {
   id: null,
   date: new Date().toISOString().substr(0, 10),
@@ -27,14 +27,18 @@ const defaultMatch = {
   location: 'Cancha Principal',
   team_a_name: '', team_b_name: '',
   status: 'programado',
-  game_type: '11v11', // FIJO
+  game_type: '11v11',
   team_a_roster: [], team_b_roster: []
 }
 const editedItem = ref({ ...defaultMatch })
 
+// VALIDACIÓN
 const canProceedToStep2 = computed(() => {
-  return editedItem.value.team_a_name && editedItem.value.team_b_name && 
-         editedItem.value.date && editedItem.value.time && editedItem.value.location
+  return editedItem.value.team_a_name && 
+         editedItem.value.team_b_name && 
+         editedItem.value.date && 
+         editedItem.value.time && 
+         editedItem.value.location
 })
 
 function openDialog(item) {
@@ -60,9 +64,14 @@ async function handleSave() {
   }
 }
 
-function showSnackbar(text, color) { snackbar.value = { show: true, text, color } }
+function showSnackbar(text, color) { 
+  snackbar.value = { show: true, text, color } 
+}
 
-onMounted(() => { fetchMatches(); fetchPlayers() })
+onMounted(() => { 
+  fetchMatches()
+  fetchPlayers() 
+})
 </script>
 
 <template>
@@ -98,6 +107,7 @@ onMounted(() => { fetchMatches(); fetchPlayers() })
       <MatchesTable :matches="matches" :loading="loading" @edit="openDialog" />
     </v-card>
 
+    <!-- DIALOG FULLSCREEN CON PASOS SEPARADOS -->
     <v-dialog v-model="dialog" fullscreen transition="dialog-bottom-transition" :scrim="false">
       <v-card theme="dark" class="bg-dark-elevated">
         
@@ -113,64 +123,189 @@ onMounted(() => { fetchMatches(); fetchPlayers() })
               <div class="step-number">1</div><span class="step-label">Datos del Partido</span>
             </div>
             <div class="step-divider"></div>
-            <div class="step-item" :class="{ active: step === 2 }">
+            <div class="step-item" :class="{ active: step === 2, disabled: !canProceedToStep2 }">
               <div class="step-number">2</div><span class="step-label">Convocatorias</span>
             </div>
           </div>
 
-          <v-btn v-if="step === 2" color="white" variant="flat" :loading="saving" @click="handleSave" class="font-weight-bold text-black px-6" prepend-icon="mdi-content-save-check">
+          <v-btn 
+            v-if="step === 2" 
+            color="white" 
+            variant="flat" 
+            :loading="saving" 
+            @click="handleSave" 
+            class="font-weight-bold text-black px-6" 
+            prepend-icon="mdi-content-save-check"
+          >
             Guardar Partido
           </v-btn>
         </v-toolbar>
 
-        <v-card-text class="pa-0 fill-height overflow-auto">
-          <div v-show="step === 1" class="fill-height">
-             <MatchInfoForm v-model="editedItem" />
-             <div class="text-center mt-8 pb-8">
-                <v-btn color="white" variant="flat" size="large" :disabled="!canProceedToStep2" @click="step = 2" class="text-black font-weight-bold px-12" append-icon="mdi-arrow-right" rounded="lg" height="52">
-                  Continuar a Convocatorias
-                </v-btn>
-                <p v-if="!canProceedToStep2" class="text-caption text-orange-darken-1 mt-3">Complete todos los campos para continuar</p>
-             </div>
+        <!-- CONTENIDO: SOLO SE MUESTRA EL PASO ACTIVO -->
+        <v-card-text class="pa-0 fill-height">
+          
+          <!-- PASO 1: INFORMACIÓN DEL PARTIDO -->
+          <div v-if="step === 1" class="step-container fill-height">
+            <MatchInfoForm v-model="editedItem" />
+            
+            <div class="action-footer">
+              <v-btn 
+                color="white" 
+                variant="flat" 
+                size="large" 
+                :disabled="!canProceedToStep2" 
+                @click="step = 2" 
+                class="text-black font-weight-bold px-12" 
+                append-icon="mdi-arrow-right" 
+                rounded="lg" 
+                height="52"
+              >
+                Continuar a Convocatorias
+              </v-btn>
+              <p v-if="!canProceedToStep2" class="text-caption text-orange-darken-1 mt-3 mb-0">
+                Complete todos los campos para continuar
+              </p>
+            </div>
           </div>
 
-          <div v-show="step === 2" class="fill-height d-flex flex-column">
-             <div class="flex-grow-1" style="min-height: 0;">
-                <MatchRosterEditor v-model="editedItem" :playersPool="players" @notify="(msg) => showSnackbar(msg.text, msg.color)"/>
-             </div>
-             <div class="back-button-container py-4 text-center bg-dark-elevated border-top-subtle">
-                <v-btn variant="outlined" color="white" @click="step = 1" prepend-icon="mdi-arrow-left" class="font-weight-bold" rounded="lg">
-                  Volver a Datos del Partido
-                </v-btn>
-             </div>
+          <!-- PASO 2: CONVOCATORIAS CON DRAG & DROP -->
+          <div v-if="step === 2" class="step-container fill-height">
+            <MatchRosterDragDrop 
+              v-model="editedItem" 
+              :playersPool="players" 
+              @notify="(msg) => showSnackbar(msg.text, msg.color)"
+            />
+            
+            <div class="action-footer border-top-subtle">
+              <v-btn 
+                variant="outlined" 
+                color="white" 
+                @click="step = 1" 
+                prepend-icon="mdi-arrow-left" 
+                class="font-weight-bold" 
+                rounded="lg"
+              >
+                Volver a Datos del Partido
+              </v-btn>
+            </div>
           </div>
+
         </v-card-text>
       </v-card>
     </v-dialog>
 
     <v-snackbar v-model="snackbar.show" :color="snackbar.color" timeout="3000" location="top">
       {{ snackbar.text }}
-      <template v-slot:actions><v-btn variant="text" @click="snackbar.show = false">Cerrar</v-btn></template>
-    </v-snackbar>
-  </div>
+      <template v-slot:actions>
+        <v-btn variant="text" @click="snackbar.show = false">
+          Cerrar</v-btn> </template> </v-snackbar>
+ </div>
 </template>
+<style
+  scoped>
+  .bg-dark-elevated {
+    background: #0a0b0d !important;
+  }
 
-<style scoped>
-/* ESTILOS ORIGINALES RESCATADOS */
-.bg-dark-elevated { background: #0a0b0d !important; }
-.card-dark-outline { background-color: transparent !important; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; }
-.header-section { background: rgba(255, 255, 255, 0.02); padding: 20px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); }
-.border-bottom-subtle { border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-.border-top-subtle { border-top: 1px solid rgba(255, 255, 255, 0.08); }
-.tracking-wider { letter-spacing: 1.5px; }
+  .card-dark-outline {
+    background-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+  }
 
-/* STEPPER ORIGINAL */
-.stepper-indicator { display: flex; align-items: center; gap: 16px; }
-.step-item { display: flex; align-items: center; gap: 8px; opacity: 0.4; transition: opacity 0.3s; }
-.step-item.active { opacity: 1; }
-.step-number { width: 28px; height: 28px; border-radius: 50%; background: rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; color: white; border: 2px solid rgba(255, 255, 255, 0.2); }
-.step-item.active .step-number { background: white; color: black; border-color: white; }
-.step-label { font-size: 0.8rem; font-weight: 600; color: rgba(255, 255, 255, 0.7); }
-.step-item.active .step-label { color: white; }
-.step-divider { width: 40px; height: 2px; background: rgba(255, 255, 255, 0.1); }
+  .header-section {
+    background: rgba(255, 255, 255, 0.02);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .border-bottom-subtle {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .border-top-subtle {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .tracking-wider {
+    letter-spacing: 1.5px;
+  }
+
+  .step-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow-y: auto;
+  }
+
+  .action-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.2);
+    margin-top: auto;
+    flex-shrink: 0;
+  }
+
+  .stepper-indicator {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .step-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+  }
+
+  .step-item.active {
+    opacity: 1;
+  }
+
+  .step-item.disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+  }
+
+  .step-number {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.75rem;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .step-item.active .step-number {
+    background: white;
+    color: black;
+    border-color: white;
+  }
+
+  .step-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  .step-item.active .step-label {
+    color: white;
+  }
+
+  .step-divider {
+    width: 40px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.1);
+  }
 </style>
