@@ -1,5 +1,4 @@
 <script setup>
-// Importamos la imagen usando la ruta relativa correcta
 import fieldImage from '../../../images/estadio_alineacion.jpg';
 
 const props = defineProps({
@@ -24,6 +23,7 @@ const handleDrop = (event) => {
       @drop="handleDrop"
       :style="{ backgroundImage: `url(${fieldImage})` }"
     >
+      <div class="field-overlay"></div>
       <slot></slot>
     </div>
   </div>
@@ -36,23 +36,33 @@ const handleDrop = (event) => {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #e0e0e0; /* Fondo gris para diferenciar del fondo blanco */
-  padding: 20px;
-  border-radius: 8px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 10px; /* Reduje padding para ganar espacio */
+  border-radius: 12px;
   overflow: hidden; 
+  border: 1px solid #334155;
 }
 
 .field-container {
-  /* Hacemos la cancha responsiva pero respetando proporciones */
   width: 100%;
-  max-width: 450px; /* Ancho máximo para que no se vea gigante */
-  aspect-ratio: 3/4.5; /* Proporción vertical de cancha */
+  max-width: 480px; 
+  /* CAMBIO: Hacemos la cancha un poco menos alta para que se vea mejor */
+  aspect-ratio: 3/4; 
+  max-height: 75vh; /* Limitamos la altura máxima */
   background-size: 100% 100%;
   background-position: center;
   background-repeat: no-repeat;
   position: relative;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.5); /* Sombra fuerte para resaltar */
-  border: 4px solid white;
-  border-radius: 4px;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.7); 
+  border: 4px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden; /* Mantiene todo dentro, pero con margen interno para nombres */
+}
+
+.field-overlay {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.1); 
+  pointer-events: none;
 }
 </style>
