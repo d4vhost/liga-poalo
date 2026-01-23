@@ -200,7 +200,7 @@ const saveLineup = () => {
   gap: 20px;
   height: 85vh;
   padding: 20px;
-  background-color: #0f172a; /* Fondo muy oscuro (Slate 900) */
+  background-color: #000000; /* NEGRO PURO */
   color: #e2e8f0;
   font-family: 'Inter', sans-serif;
 }
@@ -209,8 +209,8 @@ const saveLineup = () => {
 .modal-overlay {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0, 0, 0, 0.75); /* Fondo muy oscuro */
-  backdrop-filter: blur(5px); /* Efecto borroso pro */
+  background: rgba(0, 0, 0, 0.85); /* Más oscuro */
+  backdrop-filter: blur(5px);
   z-index: 100;
   display: flex;
   align-items: center;
@@ -218,13 +218,13 @@ const saveLineup = () => {
 }
 
 .modal-card {
-  background: #1e293b; /* Slate 800 */
-  border: 1px solid #334155;
+  background: #1a1a1a; /* Gris muy oscuro */
+  border: 1px solid #333;
   padding: 25px;
   border-radius: 16px;
   width: 320px;
   text-align: center;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.7);
   animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -248,7 +248,7 @@ const saveLineup = () => {
   border-radius: 12px;
   cursor: pointer;
   transition: all 0.2s;
-  background: #334155;
+  background: #2a2a2a;
   color: white;
 }
 
@@ -257,10 +257,10 @@ const saveLineup = () => {
 .pos-btn .label { font-size: 0.8rem; font-weight: bold; text-transform: uppercase;}
 
 /* Colores específicos para botones del modal */
-.pos-btn.fw { background: linear-gradient(135deg, #ef4444, #b91c1c); } /* Rojo */
-.pos-btn.mf { background: linear-gradient(135deg, #22c55e, #15803d); } /* Verde */
-.pos-btn.df { background: linear-gradient(135deg, #3b82f6, #1d4ed8); } /* Azul */
-.pos-btn.gk { background: linear-gradient(135deg, #eab308, #a16207); color: #000; } /* Amarillo */
+.pos-btn.fw { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.pos-btn.mf { background: linear-gradient(135deg, #22c55e, #15803d); }
+.pos-btn.df { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.pos-btn.gk { background: linear-gradient(135deg, #eab308, #a16207); color: #000; }
 
 .btn-cancel {
   background: transparent;
@@ -275,17 +275,17 @@ const saveLineup = () => {
 /* --- SIDEBAR LISTA --- */
 .sidebar {
   width: 300px;
-  background: #1e293b; /* Slate 800 */
+  background: #0a0a0a; /* Casi negro */
   border-radius: 12px;
-  border: 1px solid #334155;
+  border: 1px solid #222;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
 }
 
 .sidebar-header {
   padding: 20px;
-  border-bottom: 1px solid #334155;
+  border-bottom: 1px solid #222;
   display: flex; justify-content: space-between; align-items: center;
 }
 .sidebar-header h3 { margin: 0; color: #f8fafc; font-size: 1.1rem; }
@@ -295,13 +295,13 @@ const saveLineup = () => {
   flex: 1; overflow-y: auto; padding: 15px;
 }
 .players-scroll::-webkit-scrollbar { width: 6px; }
-.players-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+.players-scroll::-webkit-scrollbar-thumb { background: #333; border-radius: 3px; }
 
 .player-item {
   display: flex; justify-content: space-between; align-items: center;
   padding: 10px; margin-bottom: 8px;
-  background: #0f172a; /* Más oscuro que el sidebar */
-  border: 1px solid #334155;
+  background: #141414;
+  border: 1px solid #222;
   border-radius: 8px;
   transition: all 0.2s;
 }
@@ -310,7 +310,7 @@ const saveLineup = () => {
 .player-info { display: flex; align-items: center; gap: 12px; }
 .p-avatar {
   width: 32px; height: 32px;
-  background: #334155; color: #94a3b8;
+  background: #2a2a2a; color: #94a3b8;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   font-weight: bold; font-size: 0.8rem;
@@ -330,9 +330,9 @@ const saveLineup = () => {
 /* --- ÁREA DE CANCHA --- */
 .field-area {
   flex: 1;
-  background: #1e293b;
+  background: #0a0a0a;
   border-radius: 12px;
-  border: 1px solid #334155;
+  border: 1px solid #222;
   padding: 20px;
   display: flex; flex-direction: column; align-items: center;
 }
@@ -362,7 +362,7 @@ const saveLineup = () => {
   width: 100%; height: 100%;
   border-radius: 50%;
   border: 2px dashed rgba(255,255,255,0.3);
-  background: rgba(255,255,255,0.1); /* Semi-transparente */
+  background: rgba(255,255,255,0.1);
   backdrop-filter: blur(2px);
   display: flex; align-items: center; justify-content: center;
 }
@@ -378,16 +378,16 @@ const saveLineup = () => {
 .token-avatar {
   width: 44px; height: 44px;
   background: white;
-  border: 3px solid #0f172a;
+  border: 3px solid #0a0a0a;
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 6px rgba(0,0,0,0.5);
 }
-.t-num { font-weight: 900; color: #0f172a; }
+.t-num { font-weight: 900; color: #0a0a0a; }
 
 .t-name {
   position: absolute; bottom: -20px;
-  background: rgba(0,0,0,0.8); color: white;
+  background: rgba(0,0,0,0.9); color: white;
   padding: 2px 8px; border-radius: 4px;
   font-size: 0.75rem; white-space: nowrap;
 }
@@ -396,7 +396,7 @@ const saveLineup = () => {
   position: absolute; top: -5px; right: -5px;
   background: #ef4444; color: white;
   width: 18px; height: 18px; border-radius: 50%;
-  border: 2px solid #1e293b;
+  border: 2px solid #0a0a0a;
   cursor: pointer; display: flex; align-items: center; justify-content: center;
   font-size: 10px;
 }
