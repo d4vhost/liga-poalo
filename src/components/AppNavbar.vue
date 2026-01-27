@@ -111,13 +111,13 @@ const texts = {
     home: 'Inicio',
     matches: 'Partidos',
     contact: 'Contáctanos',
-    login: 'Login / Registro'
+    login: 'login'
   },
   en: {
     home: 'Home',
     matches: 'Matches',
     contact: 'Contact Us',
-    login: 'Login / Sign Up'
+    login: 'login'
   }
 };
 
