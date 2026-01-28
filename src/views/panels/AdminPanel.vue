@@ -1,13 +1,17 @@
 <script setup>
-// No se requieren importaciones ni lógica de componentes visuales
+import AdminSidebar from '../../components/admin/AdminSidebar.vue'
 </script>
 
 <template>
-  <div>
-    <h1>BIENVENIDO ADMINISTRADOR</h1>
-  </div>
-</template>
+  <v-app>
+    <AdminSidebar />
 
-<style scoped>
-/* Sin diseño, tal como pediste */
-</style>
+    <v-app-bar flat border title="Administración"></v-app-bar>
+
+    <v-main class="bg-grey-lighten-4">
+      <v-container fluid class="pa-6">
+        <router-view></router-view>
+      </v-container>
+    </v-main>
+  </v-app>
+</template>

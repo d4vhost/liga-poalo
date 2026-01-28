@@ -27,29 +27,44 @@ const router = createRouter({
       path: '/login', 
       name: 'login', 
       component: () => import('../views/auth/LoginView.vue'),
-      meta: { hideLayout: true } // Oculta el navbar normal
+      meta: { hideLayout: true } // Oculta el navbar público
     },
 
-    // --- PANEL ADMIN (SIMPLIFICADO AL MÁXIMO) ---
+    // --- PANEL ADMIN MODULAR ---
     {
       path: '/panel-admin',
-      name: 'admin-panel', // Nombre de la ruta
-      // Carga directamente tu panel simple. Ya no es un "layout" padre.
+      // NOTA: No le ponemos 'name' aquí porque tiene hijos.
+      // Este componente actúa como LAYOUT (tiene el Sidebar y un <router-view>)
       component: () => import('../views/panels/AdminPanel.vue'),
       meta: { 
-        hideLayout: true, 
+        hideLayout: true, // Oculta navbar público
         requiresAuth: true 
-      }
-      // NOTA: Se eliminó toda la sección "children" porque ya no usas dashboard ni sub-vistas.
+      },
+      children: [
+        // 1. Vista por defecto (Dashboard / Inicio del admin)
+        {
+          path: '', // Cuando entras a /panel-admin
+          name: 'admin-dashboard',
+          // Puedes crear un archivo DashboardView.vue sencillo o redirigir
+          component: () => import('../views/admin/DashboardView.vue') 
+        },
+        // 2. La vista para crear actas e imprimir
+        {
+          path: 'programar-partidos', // URL: /panel-admin/programar-partidos
+          name: 'admin-matches',
+          component: () => import('../views/admin/MatchGenerator.vue')
+        },
+        // Aquí agregarás más en el futuro: 'resultados', 'equipos', etc.
+      ]
     },
 
-    // Redirección por defecto: Si ponen una ruta que no existe, van al Home
+    // Redirección por defecto
     { path: '/:pathMatch(.*)*', redirect: '/' }
   ],
   scrollBehavior() { return { top: 0 } }
 })
 
-// --- GUARDIA DE SEGURIDAD ---
+// --- GUARDIA DE SEGURIDAD (Sin cambios, tu lógica es correcta) ---
 router.beforeEach(async (to, from, next) => {
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
 
