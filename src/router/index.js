@@ -29,35 +29,7 @@ const router = createRouter({
       component: () => import('../views/auth/LoginView.vue'),
       meta: { hideLayout: true } // Oculta el navbar público
     },
-
-    // --- PANEL ADMIN MODULAR ---
-    {
-      path: '/panel-admin',
-      // NOTA: No le ponemos 'name' aquí porque tiene hijos.
-      // Este componente actúa como LAYOUT (tiene el Sidebar y un <router-view>)
-      component: () => import('../views/panels/AdminPanel.vue'),
-      meta: { 
-        hideLayout: true, // Oculta navbar público
-        requiresAuth: true 
-      },
-      children: [
-        // 1. Vista por defecto (Dashboard / Inicio del admin)
-        {
-          path: '', // Cuando entras a /panel-admin
-          name: 'admin-dashboard',
-          // Puedes crear un archivo DashboardView.vue sencillo o redirigir
-          component: () => import('../views/admin/DashboardView.vue') 
-        },
-        // 2. La vista para crear actas e imprimir
-        {
-          path: 'programar-partidos', // URL: /panel-admin/programar-partidos
-          name: 'admin-matches',
-          component: () => import('../views/admin/MatchGenerator.vue')
-        },
-        // Aquí agregarás más en el futuro: 'resultados', 'equipos', etc.
-      ]
-    },
-
+   
     // Redirección por defecto
     { path: '/:pathMatch(.*)*', redirect: '/' }
   ],
