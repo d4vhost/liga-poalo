@@ -1,5 +1,7 @@
 <template>
   <div class="matches-page">
+
+    <!-- HERO SECTION -->
     <div class="hero-matches position-relative">
       <v-img
         src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1993&auto=format&fit=crop"
@@ -10,119 +12,210 @@
       </v-img>
       <v-container class="hero-content">
         <div class="text-center fade-in-up">
-          <h1 class="text-h3 text-md-h2 font-weight-black text-white text-uppercase mb-2">
+          <h1 class="text-h2 text-md-h1 font-weight-black text-white text-uppercase mb-4 text-shadow-heavy" style="line-height: 1; letter-spacing: -2px;">
             Resultados y Calendario
           </h1>
-          <p class="text-subtitle-1 text-grey-lighten-3 mx-auto">
-            Liga Deportiva San José de Poaló
+          <p class="text-h6 font-weight-regular text-grey-lighten-3 mx-auto" style="max-width: 700px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">
+            Liga Deportiva San José de Poaló — Temporada 2026
           </p>
         </div>
       </v-container>
       <div class="hero-gradient"></div>
     </div>
 
-    <section class="matches-content py-8">
+    <!-- CONTENIDO PRINCIPAL -->
+    <section class="matches-content py-12">
       <v-container>
-        <v-row class="fill-height align-stretch">
-          
+        <v-row class="align-stretch">
+
+          <!-- COLUMNA IZQUIERDA: CALENDARIO -->
           <v-col cols="12" md="4" class="d-flex flex-column">
-            <div class="sticky-calendar flex-grow-1">
-              <v-card class="calendar-card pa-4 h-100 d-flex flex-column" elevation="4">
+            <div class="sticky-calendar">
+              <v-card class="calendar-card pa-4 d-flex flex-column" elevation="0">
                 <div class="d-flex align-center mb-3">
-                  <v-icon color="white" class="mr-2" size="24">mdi-calendar-month</v-icon>
-                  <h3 class="text-h6 font-weight-bold text-white mb-0">Calendario Oficial</h3>
+                  <v-icon color="white" class="mr-2" size="22">mdi-calendar-month</v-icon>
+                  <h3 class="text-body-1 font-weight-bold text-white mb-0">Calendario Oficial</h3>
                 </div>
-                
-                <v-date-picker 
-                  v-model="date" 
-                  elevation="0" 
-                  class="w-100 calendar-transparent flex-grow-1"
+                <v-date-picker
+                  v-model="date"
+                  elevation="0"
+                  class="w-100 calendar-transparent"
                   color="blue-grey-lighten-2"
                 ></v-date-picker>
-
                 <v-divider class="my-3 border-opacity-25"></v-divider>
-                
-                <div class="events-list">
+                <div>
                   <p class="text-caption font-weight-bold text-grey-lighten-1 mb-2 text-uppercase">
                     Jornada Actual
                   </p>
                   <v-list density="compact" bg-color="transparent" theme="dark" class="pa-0">
                     <v-list-item class="px-0">
                       <template v-slot:prepend>
-                        <v-icon size="small" color="white" class="mr-2">mdi-check-circle</v-icon>
+                        <v-icon size="small" color="green-lighten-2" class="mr-2">mdi-check-circle</v-icon>
                       </template>
-                      <v-list-item-title class="text-caption font-weight-bold text-white">Jornada 5 - Finalizada</v-list-item-title>
+                      <v-list-item-title class="text-caption font-weight-bold text-white">
+                        Jornada 5 — Finalizada
+                      </v-list-item-title>
+                    </v-list-item>
+                    <v-list-item class="px-0 mt-1">
+                      <template v-slot:prepend>
+                        <v-icon size="small" color="orange-lighten-2" class="mr-2">mdi-clock-outline</v-icon>
+                      </template>
+                      <v-list-item-title class="text-caption font-weight-medium text-grey-lighten-2">
+                        Jornada 6 — 1 Mar 2026
+                      </v-list-item-title>
                     </v-list-item>
                   </v-list>
                 </div>
               </v-card>
+
+              <!-- ESTADÍSTICAS RÁPIDAS -->
+              <div class="mt-4">
+                <v-row dense>
+                  <v-col cols="6" v-for="(stat, i) in quickStats" :key="i">
+                    <v-card class="stat-mini-card pa-4 text-center" elevation="0">
+                      <v-icon :color="stat.color" size="28" class="mb-2">{{ stat.icon }}</v-icon>
+                      <p class="text-h5 font-weight-black text-white mb-0">{{ stat.value }}</p>
+                      <p class="text-caption text-grey-lighten-2">{{ stat.label }}</p>
+                    </v-card>
+                  </v-col>
+                </v-row>
+              </div>
             </div>
           </v-col>
 
-          <v-col cols="12" md="8" class="d-flex flex-column">
-            <div class="d-flex justify-space-between align-center mb-4 pl-1">
+          <!-- COLUMNA DERECHA: PARTIDOS -->
+          <v-col cols="12" md="8">
+            <div class="d-flex justify-space-between align-center mb-6 pl-1">
               <h2 class="text-h5 font-weight-bold text-white">Resultados Recientes</h2>
+              <v-btn
+                to="/login"
+                variant="text"
+                class="btn-glass-nav text-caption font-weight-bold"
+                rounded="pill"
+                height="36"
+                prepend-icon="mdi-bell-ring"
+              >
+                Notificaciones
+              </v-btn>
             </div>
 
-            <v-row dense class="flex-grow-1 align-content-stretch">
-              <v-col 
-                v-for="i in 4" 
-                :key="i" 
-                cols="12" 
-                md="6" 
-                class="pb-3 pr-md-2"
+            <v-row dense>
+              <v-col
+                v-for="(match, i) in recentMatches"
+                :key="i"
+                cols="12"
+                md="6"
+                class="pb-3"
               >
                 <v-card class="match-card h-100 d-flex flex-column" elevation="0">
-                  <div class="card-header d-flex justify-space-between align-center px-3 py-2">
-                    <div class="text-caption text-grey-lighten-2 font-weight-medium">
-                      <v-icon size="12" class="mr-1" color="white">mdi-calendar</v-icon>
-                      15 Feb 2026
+                  <div class="card-header d-flex justify-space-between align-center px-4 py-2">
+                    <div class="d-flex align-center text-caption text-grey-lighten-2 font-weight-medium">
+                      <v-icon size="13" class="mr-1" color="grey-lighten-1">mdi-calendar</v-icon>
+                      {{ match.date }}
                     </div>
-                    <div class="text-caption text-grey-lighten-2 font-weight-medium text-truncate" style="max-width: 120px;">
-                      <v-icon size="12" class="mr-1" color="white">mdi-stadium</v-icon>
-                      Estadio Central
-                    </div>
+                    <v-chip
+                      :color="match.status === 'Finalizado' ? 'green-darken-3' : 'orange-darken-3'"
+                      variant="flat"
+                      size="x-small"
+                      class="font-weight-bold px-2"
+                    >
+                      {{ match.status }}
+                    </v-chip>
                   </div>
 
                   <v-divider class="border-opacity-10"></v-divider>
 
-                  <div class="card-body pa-3 d-flex align-center justify-space-between flex-grow-1">
-                    <div class="team-block text-center" style="width: 30%;">
-                      <v-avatar size="42" color="grey-darken-4" class="mb-2 elevation-2 border-subtle">
-                        <span class="text-h6 font-weight-bold text-white">T</span>
+                  <div class="card-body pa-4 d-flex align-center justify-space-between flex-grow-1">
+                    <div class="team-block text-center" style="width: 35%;">
+                      <v-avatar size="44" :color="match.color1" class="mb-2 elevation-2">
+                        <span class="text-body-1 font-weight-black text-white">{{ match.team1.charAt(0) }}</span>
                       </v-avatar>
-                      <div class="text-caption font-weight-bold text-white text-truncate">Tigres</div>
+                      <div class="text-caption font-weight-bold text-white" style="line-height: 1.2;">{{ match.team1 }}</div>
                     </div>
 
-                    <div class="score-board text-center mx-1" style="width: 40%;">
-                      <div class="d-flex justify-center align-center mb-1">
-                        <span class="text-h4 font-weight-bold text-white">2</span>
-                        <span class="text-h6 text-grey mx-2">-</span>
-                        <span class="text-h4 font-weight-bold text-white">1</span>
+                    <div class="score-board text-center mx-2" style="width: 30%;">
+                      <div class="d-flex justify-center align-center gap-score">
+                        <span class="text-h4 font-weight-black text-white">{{ match.score1 }}</span>
+                        <span class="text-body-2 text-grey mx-1">—</span>
+                        <span class="text-h4 font-weight-black text-white">{{ match.score2 }}</span>
                       </div>
-                      <v-chip color="white" variant="outlined" size="x-small" class="font-weight-bold px-2 text-white" style="border-color: rgba(255,255,255,0.3);">
-                        Finalizado
-                      </v-chip>
+                      <p class="text-caption text-grey-lighten-2 mt-1">
+                        <v-icon size="11" class="mr-1">mdi-clock-outline</v-icon>{{ match.time }}
+                      </p>
                     </div>
 
-                    <div class="team-block text-center" style="width: 30%;">
-                      <v-avatar size="42" color="grey-darken-4" class="mb-2 elevation-2 border-subtle">
-                        <span class="text-h6 font-weight-bold text-white">A</span>
+                    <div class="team-block text-center" style="width: 35%;">
+                      <v-avatar size="44" :color="match.color2" class="mb-2 elevation-2">
+                        <span class="text-body-1 font-weight-black text-white">{{ match.team2.charAt(0) }}</span>
                       </v-avatar>
-                      <div class="text-caption font-weight-bold text-white text-truncate">Águilas</div>
+                      <div class="text-caption font-weight-bold text-white" style="line-height: 1.2;">{{ match.team2 }}</div>
                     </div>
                   </div>
 
-                  <div class="card-footer px-3 py-2 mt-auto">
-                    <div class="d-flex justify-space-between">
-                      <span class="text-caption text-grey-lighten-1">
-                        Inicio: <span class="text-white">14:00</span>
-                      </span>
-                      <span class="text-caption text-grey-lighten-1">
-                        Fin: <span class="text-white">15:45</span>
-                      </span>
+                  <div class="card-footer px-4 py-2">
+                    <div class="d-flex align-center text-caption text-grey-lighten-2">
+                      <v-icon size="13" class="mr-1" color="grey-lighten-1">mdi-stadium</v-icon>
+                      {{ match.venue }}
                     </div>
                   </div>
+                </v-card>
+              </v-col>
+            </v-row>
+
+            <!-- PRÓXIMOS PARTIDOS -->
+            <div class="d-flex align-center mt-8 mb-5 pl-1">
+              <h2 class="text-h5 font-weight-bold text-white">Próximos Encuentros</h2>
+            </div>
+
+            <v-row dense>
+              <v-col
+                v-for="(match, i) in upcomingMatches"
+                :key="i"
+                cols="12"
+                class="pb-3"
+              >
+                <v-card class="upcoming-card pa-4" elevation="0">
+                  <v-row align="center" no-gutters>
+                    <v-col cols="12" sm="5">
+                      <div class="d-flex align-center justify-space-between justify-sm-start gap-teams">
+                        <div class="text-center" style="min-width: 80px;">
+                          <v-avatar size="40" :color="match.color1" class="mb-1 elevation-2">
+                            <span class="text-body-2 font-weight-black text-white">{{ match.team1.charAt(0) }}</span>
+                          </v-avatar>
+                          <p class="text-caption font-weight-bold text-white mb-0">{{ match.team1 }}</p>
+                        </div>
+                        <span class="text-body-2 font-weight-bold text-grey mx-3">VS</span>
+                        <div class="text-center" style="min-width: 80px;">
+                          <v-avatar size="40" :color="match.color2" class="mb-1 elevation-2">
+                            <span class="text-body-2 font-weight-black text-white">{{ match.team2.charAt(0) }}</span>
+                          </v-avatar>
+                          <p class="text-caption font-weight-bold text-white mb-0">{{ match.team2 }}</p>
+                        </div>
+                      </div>
+                    </v-col>
+                    <v-col cols="12" sm="7" class="mt-3 mt-sm-0">
+                      <v-row dense class="justify-sm-end">
+                        <v-col cols="auto">
+                          <div class="upcoming-detail-chip">
+                            <v-icon size="14" color="blue-lighten-2" class="mr-1">mdi-calendar</v-icon>
+                            <span class="text-caption text-white font-weight-medium">{{ match.date }}</span>
+                          </div>
+                        </v-col>
+                        <v-col cols="auto">
+                          <div class="upcoming-detail-chip">
+                            <v-icon size="14" color="orange-lighten-2" class="mr-1">mdi-clock-outline</v-icon>
+                            <span class="text-caption text-white font-weight-medium">{{ match.time }}</span>
+                          </div>
+                        </v-col>
+                        <v-col cols="auto">
+                          <div class="upcoming-detail-chip">
+                            <v-icon size="14" color="green-lighten-2" class="mr-1">mdi-stadium</v-icon>
+                            <span class="text-caption text-white font-weight-medium">{{ match.venue }}</span>
+                          </div>
+                        </v-col>
+                      </v-row>
+                    </v-col>
+                  </v-row>
                 </v-card>
               </v-col>
             </v-row>
@@ -131,94 +224,125 @@
       </v-container>
     </section>
 
-    <section class="section-quick-info py-12" ref="quickInfoSection">
+    <!-- SECCIÓN INFORMACIÓN DE LA LIGA -->
+    <section class="section-quick-info py-16">
       <v-container>
-        <div class="text-center mb-10 scroll-reveal">
-          <h2 class="text-h4 font-weight-black text-white mb-2">
+        <div class="text-center mb-12 scroll-reveal">
+          <h2 class="text-h3 text-md-h2 font-weight-black text-white mb-4" style="letter-spacing: -1px;">
             Información de la Liga
           </h2>
-          <p class="text-body-1 text-grey-lighten-2 mx-auto" style="max-width: 650px;">
+          <p class="text-h6 font-weight-regular text-grey-lighten-1 mx-auto" style="max-width: 650px;">
             Datos clave sobre el desarrollo del campeonato actual.
           </p>
         </div>
 
         <v-row class="justify-center">
-          <v-col cols="12" md="4" v-for="(info, i) in quickInfoItems" :key="i" class="scroll-reveal">
-            <v-card class="info-card pa-6 h-100" elevation="0">
-              <div class="icon-circle mb-4">
+          <v-col cols="12" md="4" v-for="(info, i) in quickInfoItems" :key="i" class="scroll-reveal" :style="`transition-delay: ${i * 0.15}s`">
+            <v-card class="info-card pa-8 h-100" elevation="0">
+              <div class="icon-circle mb-5">
                 <v-icon color="white" size="32">{{ info.icon }}</v-icon>
               </div>
-              <h3 class="text-h6 font-weight-bold text-white mb-3">{{ info.title }}</h3>
-              <p class="text-body-2 text-grey-lighten-2 mb-4" style="line-height: 1.6;">{{ info.description }}</p>
-              
-              <div class="info-details pt-3">
-                <div v-for="(detail, idx) in info.details" :key="idx" class="d-flex align-center mb-2">
+              <h3 class="text-h5 font-weight-bold text-white mb-3">{{ info.title }}</h3>
+              <p class="text-body-1 text-grey-lighten-2 mb-5" style="line-height: 1.7;">{{ info.description }}</p>
+              <div class="info-details pt-4">
+                <div v-for="(detail, idx) in info.details" :key="idx" class="d-flex align-center mb-3">
                   <v-icon size="16" color="blue-grey-lighten-3" class="mr-2">mdi-check-circle</v-icon>
-                  <span class="text-caption text-grey-lighten-1">{{ detail }}</span>
+                  <span class="text-body-2 text-grey-lighten-1">{{ detail }}</span>
                 </div>
               </div>
             </v-card>
           </v-col>
         </v-row>
-
-        <div class="text-center mt-12 scroll-reveal">
-          <v-card class="cta-card pa-8 mx-auto position-relative overflow-hidden" max-width="700" elevation="0">
-            <div class="d-flex align-center justify-space-between flex-column flex-sm-row position-relative z-1">
-              <div class="text-center text-sm-left mr-sm-8 mb-6 mb-sm-0">
-                <h3 class="text-h5 font-weight-bold text-white mb-2">
-                  ¿Quieres recibir notificaciones?
-                </h3>
-                <p class="text-body-2 text-grey-lighten-2">
-                  Suscríbete para recibir alertas de cambios de horario y resultados al instante.
-                </p>
-              </div>
-              <v-btn 
-                class="btn-glass px-8"
-                height="48"
-                rounded="pill"
-                to="/login"
-              >
-                <span class="font-weight-bold">Suscribirse</span>
-                <v-icon right class="ml-2">mdi-bell-ring</v-icon>
-              </v-btn>
-            </div>
-          </v-card>
-        </div>
       </v-container>
     </section>
+
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
 
 const date = ref(new Date());
+
+const quickStats = ref([
+  { icon: 'mdi-soccer', color: 'green-lighten-2', value: '47', label: 'Goles Jornada' },
+  { icon: 'mdi-shield-check', color: 'blue-lighten-2', value: '8', label: 'Equipos' },
+  { icon: 'mdi-trophy', color: 'yellow-lighten-2', value: '5', label: 'Jornadas' },
+  { icon: 'mdi-account-group', color: 'purple-lighten-2', value: '120', label: 'Jugadores' },
+]);
+
+const recentMatches = ref([
+  {
+    team1: 'Los Tigres', team2: 'Águilas FC',
+    score1: 2, score2: 1, date: '15 Feb 2026', time: '14:00 – 15:45',
+    status: 'Finalizado', venue: 'Estadio Central',
+    color1: 'orange-darken-3', color2: 'blue-darken-3'
+  },
+  {
+    team1: 'Real Poaló', team2: 'Deportivo Sur',
+    score1: 0, score2: 0, date: '15 Feb 2026', time: '16:00 – 17:45',
+    status: 'Finalizado', venue: 'Estadio Central',
+    color1: 'green-darken-3', color2: 'red-darken-3'
+  },
+  {
+    team1: 'Unidos FC', team2: 'Los Leones',
+    score1: 3, score2: 2, date: '16 Feb 2026', time: '10:00 – 11:50',
+    status: 'Finalizado', venue: 'Cancha Norte',
+    color1: 'purple-darken-3', color2: 'teal-darken-3'
+  },
+  {
+    team1: 'Estrellas', team2: 'Cóndores',
+    score1: 1, score2: 3, date: '16 Feb 2026', time: '12:00 – 13:45',
+    status: 'Finalizado', venue: 'Cancha Norte',
+    color1: 'cyan-darken-3', color2: 'brown-darken-3'
+  },
+]);
+
+const upcomingMatches = ref([
+  {
+    team1: 'Los Tigres', team2: 'Real Poaló',
+    date: '1 Mar 2026', time: '14:00',
+    venue: 'Estadio Central',
+    color1: 'orange-darken-3', color2: 'green-darken-3'
+  },
+  {
+    team1: 'Águilas FC', team2: 'Unidos FC',
+    date: '1 Mar 2026', time: '16:00',
+    venue: 'Estadio Central',
+    color1: 'blue-darken-3', color2: 'purple-darken-3'
+  },
+  {
+    team1: 'Los Leones', team2: 'Cóndores',
+    date: '2 Mar 2026', time: '10:00',
+    venue: 'Cancha Norte',
+    color1: 'teal-darken-3', color2: 'brown-darken-3'
+  },
+]);
 
 const quickInfoItems = ref([
   {
     icon: 'mdi-trophy-outline',
-    title: 'Resultados en Vivo',
-    description: 'Sigue los marcadores minuto a minuto. Actualizaciones instantáneas desde el campo de juego.',
+    title: 'Resultados en Tiempo Real',
+    description: 'Sigue los marcadores minuto a minuto con actualizaciones instantáneas desde el campo de juego.',
     details: ['Goleadores en tiempo real', 'Tarjetas y sanciones', 'Cambios de jugadores']
   },
   {
     icon: 'mdi-chart-bar',
     title: 'Tabla de Posiciones',
-    description: 'Clasificación oficial actualizada automáticamente al finalizar cada jornada.',
+    description: 'Clasificación oficial actualizada automáticamente al finalizar cada jornada del campeonato.',
     details: ['Puntos acumulados', 'Diferencia de gol', 'Partidos jugados']
   },
   {
     icon: 'mdi-book-open-variant',
     title: 'Reglamento Oficial',
-    description: 'Consulta la normativa vigente para la temporada 2026 y evita sanciones.',
+    description: 'Consulta la normativa vigente para la temporada 2026 y mantente al día con las reglas.',
     details: ['Código de disciplina', 'Reglas de inscripción', 'Protocolos de arbitraje']
   }
 ]);
 
-// Animaciones
 let observer;
 onMounted(() => {
-  const options = { threshold: 0.15 };
+  const options = { threshold: 0.15, rootMargin: '0px 0px -80px 0px' };
   observer = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) entry.target.classList.add('visible');
@@ -226,146 +350,186 @@ onMounted(() => {
   }, options);
   document.querySelectorAll('.scroll-reveal').forEach(el => observer.observe(el));
 });
+
+onUnmounted(() => {
+  if (observer) observer.disconnect();
+});
 </script>
 
 <style scoped>
-/* DEGRADADO EXACTO DEL HOME (Próximos Partidos) */
+/* BASE */
 .matches-page {
-  /* Fondo base para prevenir parpadeos */
-  background-color: #1a1a1a;
+  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
   min-height: 100vh;
-  /* El degradado exacto que pediste: #263238 (Blue Grey Darken-4) -> #1a1a1a */
-  background: linear-gradient(180deg, #263238 0%, #1a1a1a 100%);
 }
 
-/* HERO SECTION */
+/* HERO */
 .hero-matches {
-  height: 35vh;
-  min-height: 250px;
+  height: 50vh;
+  min-height: 380px;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
-  margin-top: 0;
-  padding-top: 64px;
+  padding-top: 90px;
 }
 .hero-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .hero-overlay {
   position: absolute; inset: 0;
-  /* Overlay oscuro con el tono base #263238 para mezclar imagen y fondo */
-  background: linear-gradient(to bottom, rgba(38, 50, 56, 0.5) 0%, #263238 100%);
+  background: linear-gradient(to bottom, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.88) 100%);
 }
 .hero-content { position: relative; z-index: 2; }
 .hero-gradient {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 100px;
-  /* Transición suave hacia el color de inicio de la página (#263238) */
-  background: linear-gradient(to bottom, transparent, #263238);
-  z-index: 1;
+  position: absolute; bottom: 0; left: 0; right: 0; height: 130px;
+  background: linear-gradient(to bottom, transparent, #0a0a0a);
+  z-index: 2;
+}
+.text-shadow-heavy { text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
+
+/* CONTENIDO */
+.matches-content { background: transparent; }
+
+/* STICKY CALENDAR */
+.sticky-calendar {
+  position: sticky;
+  top: 80px;
 }
 
-/* CONTENIDO PRINCIPAL */
-.matches-content {
-  background: transparent;
-}
-
-/* CALENDARIO */
+/* CALENDAR CARD */
 .calendar-card {
-  background: rgba(255, 255, 255, 0.05) !important;
+  background: rgba(255,255,255,0.05) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px !important;
 }
-.sticky-calendar { 
-  position: sticky; 
-  top: 80px; 
-  z-index: 10;
-  height: calc(100vh - 100px); /* Ajuste para que cuadre con la pantalla si es necesario */
-  max-height: 600px; /* Altura máxima controlada */
-}
-:deep(.v-date-picker-month) { padding: 0; }
 :deep(.v-picker-title) { display: none; }
+:deep(.v-date-picker-month) { padding: 0; }
 
-/* TARJETAS DE PARTIDO */
-.match-card {
-  background: rgba(255, 255, 255, 0.05) !important;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px !important;
+/* MINI STATS */
+.stat-mini-card {
+  background: rgba(255,255,255,0.04) !important;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px !important;
   transition: all 0.3s ease;
-  min-height: 160px; 
+}
+.stat-mini-card:hover {
+  background: rgba(255,255,255,0.07) !important;
+  border-color: rgba(255,255,255,0.15);
+  transform: translateY(-4px);
+}
+
+/* MATCH CARDS */
+.match-card {
+  background: rgba(255,255,255,0.04) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+  min-height: 170px;
 }
 .match-card:hover {
-  background: rgba(255, 255, 255, 0.08) !important;
-  transform: translateY(-4px);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255,255,255,0.07) !important;
+  transform: translateY(-6px);
+  border-color: rgba(255,255,255,0.18);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
 }
 .card-header {
-  background: rgba(0, 0, 0, 0.2);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
 }
 .card-footer {
-  background: rgba(0, 0, 0, 0.2);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.border-subtle {
-  border: 1px solid rgba(255,255,255,0.1);
-}
-
-/* SECCIÓN INFORMACIÓN */
-.section-quick-info {
-  background: transparent;
-  position: relative;
-  /* Línea divisoria muy sutil */
+  background: rgba(0,0,0,0.15);
   border-top: 1px solid rgba(255,255,255,0.05);
 }
+.gap-score { gap: 4px; }
 
-.info-card {
-  background: rgba(255, 255, 255, 0.03) !important;
+/* UPCOMING CARDS */
+.upcoming-card {
+  background: rgba(255,255,255,0.03) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 20px !important;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px !important;
+  transition: all 0.3s ease;
+}
+.upcoming-card:hover {
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.15);
+  transform: translateX(6px);
+}
+.upcoming-detail-chip {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 4px 10px;
+}
+.gap-teams { gap: 8px; }
+
+/* BTN NAV */
+.btn-glass-nav {
+  background: rgba(255,255,255,0.06) !important;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.8) !important;
+  transition: all 0.3s ease;
+}
+.btn-glass-nav:hover {
+  background: rgba(255,255,255,0.1) !important;
+  border-color: rgba(255,255,255,0.25);
+  color: white !important;
+}
+
+/* SECCIÓN INFO */
+.section-quick-info {
+  background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.info-card {
+  background: rgba(255,255,255,0.04) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px !important;
   transition: all 0.4s ease;
 }
 .info-card:hover {
-  transform: translateY(-8px);
-  background: rgba(255, 255, 255, 0.06) !important;
-  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateY(-10px);
+  background: rgba(255,255,255,0.06) !important;
+  border-color: rgba(255,255,255,0.15);
 }
 .icon-circle {
-  width: 60px; height: 60px;
+  width: 64px; height: 64px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255,255,255,0.05);
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255,255,255,0.1);
 }
-.info-details {
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-/* CTA Card */
-.cta-card {
-  background: rgba(30, 30, 30, 0.6) !important;
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px !important;
-}
-.z-1 { position: relative; z-index: 1; }
-
-/* Botones Glass */
-.btn-glass {
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(5px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: white !important;
-  transition: all 0.3s ease;
-}
-.btn-glass:hover {
-  background: rgba(255, 255, 255, 0.2) !important;
-  transform: translateY(-2px);
-}
+.info-details { border-top: 1px solid rgba(255,255,255,0.06); }
 
 /* ANIMACIONES */
-.scroll-reveal { opacity: 0; transform: translateY(30px); transition: all 0.8s ease; }
-.scroll-reveal.visible { opacity: 1; transform: translateY(0); }
+.fade-in-up {
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeInUp 1s ease forwards;
+}
+@keyframes fadeInUp {
+  to { opacity: 1; transform: translateY(0); }
+}
+.scroll-reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 0.8s ease, transform 0.8s ease;
+}
+.scroll-reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* RESPONSIVE */
+@media (max-width: 960px) {
+  .hero-matches { height: 40vh; min-height: 300px; }
+  .sticky-calendar { position: static; }
+}
+@media (max-width: 600px) {
+  .hero-matches { height: 35vh; min-height: 260px; padding-top: 80px; }
+}
 </style>
