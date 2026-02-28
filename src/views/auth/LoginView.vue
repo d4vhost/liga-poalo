@@ -179,6 +179,16 @@ const redireccionarPorRol = (role) => {
 
 // --- Verificar Sesión al Iniciar ---
 onMounted(async () => {
+  // 🛠️ FIX TEMPORAL: Limpiamos la sesión guardada al montar el componente.
+  // Esto evitará que te redirija automáticamente al inicio por no tener las 
+  // rutas de los paneles creadas aún, permitiéndote ver y diseñar el Login.
+  // *Nota: Cuando ya vayas a programar la lógica real y tengas tus rutas hechas, 
+  // puedes borrar estas 3 líneas.*
+  await supabase.auth.signOut();
+  localStorage.removeItem('user_role');
+  localStorage.removeItem('offline_auth');
+
+  // Continúa con la lógica normal
   const { data } = await supabase.auth.getSession();
   const cachedRole = localStorage.getItem('user_role');
 
@@ -220,9 +230,7 @@ const handleLogin = async () => {
     const userRole = profileData?.role;
 
     // 3. Validar Permisos
-    // ⚠️ CORRECCIÓN AQUÍ: Validamos contra 'administrador'
     if (!userRole || !['administrador', 'arbitro', 'jugador'].includes(userRole)) {
-      // Si entra aquí, es usuario público (thedepthed) o viewer
       await supabase.auth.signOut(); 
       throw new Error('NO_PERMISSION'); 
     }

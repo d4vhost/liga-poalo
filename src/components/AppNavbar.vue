@@ -78,12 +78,17 @@
         </v-list>
       </v-menu>
 
-      <router-link to="/login" class="login-link-custom text-decoration-none d-flex align-center">
+      <v-btn 
+        to="/login" 
+        variant="text"
+        :ripple="false"
+        class="login-link-custom text-decoration-none d-flex align-center text-none px-2"
+      >
         <v-icon color="grey-lighten-2" size="small" class="mr-2">mdi-account-circle-outline</v-icon>
         <span class="text-grey-lighten-1 font-weight-medium text-caption" style="font-family: 'Montserrat', sans-serif;">
           {{ texts[currentLang].login }}
         </span>
-      </router-link>
+      </v-btn>
 
     </div>
 
