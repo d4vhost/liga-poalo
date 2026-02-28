@@ -4,7 +4,7 @@
     <!-- HERO SECTION -->
     <div class="hero-matches position-relative">
       <v-img
-        src="https://images.unsplash.com/photo-1574629810360-7efbbe195018?q=80&w=1993&auto=format&fit=crop"
+        src="https://unsplash.com/es/fotos/balon-de-futbol-blanco-y-azul-en-campo-de-hierba-verde-OgqWLzWRSaI"
         cover
         class="hero-image"
       >
@@ -58,7 +58,7 @@
                     </v-list-item>
                     <v-list-item class="px-0 mt-1">
                       <template v-slot:prepend>
-                        <v-icon size="small" color="orange-lighten-2" class="mr-2">mdi-clock-outline</v-icon>
+                        <v-icon size="small" color="blue-lighten-2" class="mr-2">mdi-clock-outline</v-icon>
                       </template>
                       <v-list-item-title class="text-caption font-weight-medium text-grey-lighten-2">
                         Jornada 6 — 1 Mar 2026
@@ -114,7 +114,7 @@
                       {{ match.date }}
                     </div>
                     <v-chip
-                      :color="match.status === 'Finalizado' ? 'green-darken-3' : 'orange-darken-3'"
+                      :color="match.status === 'Finalizado' ? 'green-darken-3' : 'blue-grey-darken-3'"
                       variant="flat"
                       size="x-small"
                       class="font-weight-bold px-2"
@@ -127,10 +127,8 @@
 
                   <div class="card-body pa-4 d-flex align-center justify-space-between flex-grow-1">
                     <div class="team-block text-center" style="width: 35%;">
-                      <v-avatar size="44" :color="match.color1" class="mb-2 elevation-2">
-                        <span class="text-body-1 font-weight-black text-white">{{ match.team1.charAt(0) }}</span>
-                      </v-avatar>
-                      <div class="text-caption font-weight-bold text-white" style="line-height: 1.2;">{{ match.team1 }}</div>
+                      <v-icon size="48" color="white" class="mb-2">mdi-shield</v-icon>
+                      <p class="text-body-1 font-weight-bold text-white mb-0">{{ match.team1 }}</p>
                     </div>
 
                     <div class="score-board text-center mx-2" style="width: 30%;">
@@ -145,10 +143,8 @@
                     </div>
 
                     <div class="team-block text-center" style="width: 35%;">
-                      <v-avatar size="44" :color="match.color2" class="mb-2 elevation-2">
-                        <span class="text-body-1 font-weight-black text-white">{{ match.team2.charAt(0) }}</span>
-                      </v-avatar>
-                      <div class="text-caption font-weight-bold text-white" style="line-height: 1.2;">{{ match.team2 }}</div>
+                      <v-icon size="48" color="white" class="mb-2">mdi-shield</v-icon>
+                      <p class="text-body-1 font-weight-bold text-white mb-0">{{ match.team2 }}</p>
                     </div>
                   </div>
 
@@ -179,16 +175,12 @@
                     <v-col cols="12" sm="5">
                       <div class="d-flex align-center justify-space-between justify-sm-start gap-teams">
                         <div class="text-center" style="min-width: 80px;">
-                          <v-avatar size="40" :color="match.color1" class="mb-1 elevation-2">
-                            <span class="text-body-2 font-weight-black text-white">{{ match.team1.charAt(0) }}</span>
-                          </v-avatar>
+                          <v-icon size="40" color="white" class="mb-1">mdi-shield</v-icon>
                           <p class="text-caption font-weight-bold text-white mb-0">{{ match.team1 }}</p>
                         </div>
                         <span class="text-body-2 font-weight-bold text-grey mx-3">VS</span>
                         <div class="text-center" style="min-width: 80px;">
-                          <v-avatar size="40" :color="match.color2" class="mb-1 elevation-2">
-                            <span class="text-body-2 font-weight-black text-white">{{ match.team2.charAt(0) }}</span>
-                          </v-avatar>
+                          <v-icon size="40" color="white" class="mb-1">mdi-shield</v-icon>
                           <p class="text-caption font-weight-bold text-white mb-0">{{ match.team2 }}</p>
                         </div>
                       </div>
@@ -203,13 +195,13 @@
                         </v-col>
                         <v-col cols="auto">
                           <div class="upcoming-detail-chip">
-                            <v-icon size="14" color="orange-lighten-2" class="mr-1">mdi-clock-outline</v-icon>
+                            <v-icon size="14" color="cyan-lighten-2" class="mr-1">mdi-clock-outline</v-icon>
                             <span class="text-caption text-white font-weight-medium">{{ match.time }}</span>
                           </div>
                         </v-col>
                         <v-col cols="auto">
                           <div class="upcoming-detail-chip">
-                            <v-icon size="14" color="green-lighten-2" class="mr-1">mdi-stadium</v-icon>
+                            <v-icon size="14" color="blue-grey-lighten-2" class="mr-1">mdi-stadium</v-icon>
                             <span class="text-caption text-white font-weight-medium">{{ match.venue }}</span>
                           </div>
                         </v-col>
@@ -265,10 +257,10 @@ import { ref, onMounted, onUnmounted } from 'vue';
 const date = ref(new Date());
 
 const quickStats = ref([
-  { icon: 'mdi-soccer', color: 'green-lighten-2', value: '47', label: 'Goles Jornada' },
+  { icon: 'mdi-soccer', color: 'blue-lighten-2', value: '47', label: 'Goles Jornada' },
   { icon: 'mdi-shield-check', color: 'blue-lighten-2', value: '8', label: 'Equipos' },
-  { icon: 'mdi-trophy', color: 'yellow-lighten-2', value: '5', label: 'Jornadas' },
-  { icon: 'mdi-account-group', color: 'purple-lighten-2', value: '120', label: 'Jugadores' },
+  { icon: 'mdi-trophy', color: 'cyan-lighten-2', value: '5', label: 'Jornadas' },
+  { icon: 'mdi-account-group', color: 'blue-grey-lighten-2', value: '120', label: 'Jugadores' },
 ]);
 
 const recentMatches = ref([
@@ -276,25 +268,25 @@ const recentMatches = ref([
     team1: 'Los Tigres', team2: 'Águilas FC',
     score1: 2, score2: 1, date: '15 Feb 2026', time: '14:00 – 15:45',
     status: 'Finalizado', venue: 'Estadio Central',
-    color1: 'orange-darken-3', color2: 'blue-darken-3'
+    color1: 'blue-grey-darken-3', color2: 'blue-grey-darken-2'
   },
   {
     team1: 'Real Poaló', team2: 'Deportivo Sur',
     score1: 0, score2: 0, date: '15 Feb 2026', time: '16:00 – 17:45',
     status: 'Finalizado', venue: 'Estadio Central',
-    color1: 'green-darken-3', color2: 'red-darken-3'
+    color1: 'blue-darken-3', color2: 'blue-darken-2'
   },
   {
     team1: 'Unidos FC', team2: 'Los Leones',
     score1: 3, score2: 2, date: '16 Feb 2026', time: '10:00 – 11:50',
     status: 'Finalizado', venue: 'Cancha Norte',
-    color1: 'purple-darken-3', color2: 'teal-darken-3'
+    color1: 'cyan-darken-3', color2: 'blue-grey-darken-3'
   },
   {
     team1: 'Estrellas', team2: 'Cóndores',
     score1: 1, score2: 3, date: '16 Feb 2026', time: '12:00 – 13:45',
     status: 'Finalizado', venue: 'Cancha Norte',
-    color1: 'cyan-darken-3', color2: 'brown-darken-3'
+    color1: 'blue-darken-2', color2: 'blue-grey-darken-2'
   },
 ]);
 
@@ -303,19 +295,19 @@ const upcomingMatches = ref([
     team1: 'Los Tigres', team2: 'Real Poaló',
     date: '1 Mar 2026', time: '14:00',
     venue: 'Estadio Central',
-    color1: 'orange-darken-3', color2: 'green-darken-3'
+    color1: 'blue-grey-darken-3', color2: 'blue-darken-3'
   },
   {
     team1: 'Águilas FC', team2: 'Unidos FC',
     date: '1 Mar 2026', time: '16:00',
     venue: 'Estadio Central',
-    color1: 'blue-darken-3', color2: 'purple-darken-3'
+    color1: 'blue-grey-darken-2', color2: 'cyan-darken-3'
   },
   {
     team1: 'Los Leones', team2: 'Cóndores',
     date: '2 Mar 2026', time: '10:00',
     venue: 'Cancha Norte',
-    color1: 'teal-darken-3', color2: 'brown-darken-3'
+    color1: 'blue-darken-2', color2: 'blue-grey-darken-3'
   },
 ]);
 
@@ -359,7 +351,7 @@ onUnmounted(() => {
 <style scoped>
 /* BASE */
 .matches-page {
-  background: linear-gradient(180deg, #0a0a0a 0%, #1a1a1a 50%, #0f0f0f 100%);
+  background: linear-gradient(180deg, #263238 0%, #1a1a1a 50%, #0a0a0a 100%);
   min-height: 100vh;
 }
 
@@ -380,9 +372,10 @@ onUnmounted(() => {
 }
 .hero-content { position: relative; z-index: 2; }
 .hero-gradient {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 130px;
-  background: linear-gradient(to bottom, transparent, #0a0a0a);
+  position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
+  background: linear-gradient(to bottom, transparent 0%, rgba(10,10,10,0.3) 30%, rgba(10,10,10,0.7) 70%, #0a0a0a 100%);
   z-index: 2;
+  filter: blur(0.5px);
 }
 .text-shadow-heavy { text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
 
@@ -397,9 +390,9 @@ onUnmounted(() => {
 
 /* CALENDAR CARD */
 .calendar-card {
-  background: rgba(255,255,255,0.05) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.08);
   border-radius: 20px !important;
 }
 :deep(.v-picker-title) { display: none; }
@@ -407,20 +400,20 @@ onUnmounted(() => {
 
 /* MINI STATS */
 .stat-mini-card {
-  background: rgba(255,255,255,0.04) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px !important;
   transition: all 0.3s ease;
 }
 .stat-mini-card:hover {
-  background: rgba(255,255,255,0.07) !important;
-  border-color: rgba(255,255,255,0.15);
   transform: translateY(-4px);
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.2);
 }
 
 /* MATCH CARDS */
 .match-card {
-  background: rgba(255,255,255,0.04) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px !important;
@@ -428,10 +421,9 @@ onUnmounted(() => {
   min-height: 170px;
 }
 .match-card:hover {
-  background: rgba(255,255,255,0.07) !important;
-  transform: translateY(-6px);
-  border-color: rgba(255,255,255,0.18);
-  box-shadow: 0 12px 30px rgba(0,0,0,0.3);
+  transform: translateY(-8px);
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 .card-header {
   background: rgba(0,0,0,0.2);
@@ -445,21 +437,21 @@ onUnmounted(() => {
 
 /* UPCOMING CARDS */
 .upcoming-card {
-  background: rgba(255,255,255,0.03) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 16px !important;
   transition: all 0.3s ease;
 }
 .upcoming-card:hover {
-  background: rgba(255,255,255,0.06) !important;
-  border-color: rgba(255,255,255,0.15);
   transform: translateX(6px);
+  border-color: rgba(255,255,255,0.2);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.3);
 }
 .upcoming-detail-chip {
   display: inline-flex;
   align-items: center;
-  background: rgba(255,255,255,0.06);
+  background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 20px;
   padding: 4px 10px;
@@ -468,24 +460,24 @@ onUnmounted(() => {
 
 /* BTN NAV */
 .btn-glass-nav {
-  background: rgba(255,255,255,0.06) !important;
-  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255,255,255,0.15);
   color: rgba(255,255,255,0.8) !important;
   transition: all 0.3s ease;
 }
 .btn-glass-nav:hover {
-  background: rgba(255,255,255,0.1) !important;
-  border-color: rgba(255,255,255,0.25);
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255,255,255,0.3);
   color: white !important;
 }
 
 /* SECCIÓN INFO */
 .section-quick-info {
-  background: linear-gradient(180deg, #0f0f0f 0%, #1a1a1a 100%);
+  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
   border-top: 1px solid rgba(255,255,255,0.05);
 }
 .info-card {
-  background: rgba(255,255,255,0.04) !important;
+  background: rgba(255, 255, 255, 0.03) !important;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 24px !important;
@@ -493,13 +485,13 @@ onUnmounted(() => {
 }
 .info-card:hover {
   transform: translateY(-10px);
-  background: rgba(255,255,255,0.06) !important;
   border-color: rgba(255,255,255,0.15);
+  box-shadow: 0 15px 40px rgba(0,0,0,0.3);
 }
 .icon-circle {
   width: 64px; height: 64px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.05);
   display: flex; align-items: center; justify-content: center;
   border: 1px solid rgba(255,255,255,0.1);
 }
