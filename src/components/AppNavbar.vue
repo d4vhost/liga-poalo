@@ -78,7 +78,7 @@
         </v-list>
       </v-menu>
 
-      <router-link to="/login" class="text-decoration-none d-flex align-center login-link">
+      <router-link to="/login" class="login-link-custom text-decoration-none d-flex align-center">
         <v-icon color="grey-lighten-2" size="small" class="mr-2">mdi-account-circle-outline</v-icon>
         <span class="text-grey-lighten-1 font-weight-medium text-caption" style="font-family: 'Montserrat', sans-serif;">
           {{ texts[currentLang].login }}
@@ -187,10 +187,18 @@ const setLang = (lang) => {
 
 .gap-3 { gap: 12px; }
 
-.login-link {
-  transition: opacity 0.2s;
+.login-link-custom {
+  transition: all 0.3s ease;
+  cursor: pointer;
+  outline: none;
+  border: none;
 }
-.login-link:hover {
+
+.login-link-custom:hover {
   opacity: 0.8;
+}
+
+.login-link-custom:focus {
+  outline: none;
 }
 </style>

@@ -4,7 +4,7 @@
     <!-- HERO SECTION -->
     <div class="hero-matches position-relative">
       <v-img
-        src="https://unsplash.com/es/fotos/balon-de-futbol-blanco-y-azul-en-campo-de-hierba-verde-OgqWLzWRSaI"
+        src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=2070&auto=format&fit=crop"
         cover
         class="hero-image"
       >
@@ -20,7 +20,6 @@
           </p>
         </div>
       </v-container>
-      <div class="hero-gradient"></div>
     </div>
 
     <!-- CONTENIDO PRINCIPAL -->
@@ -351,7 +350,7 @@ onUnmounted(() => {
 <style scoped>
 /* BASE */
 .matches-page {
-  background: linear-gradient(180deg, #263238 0%, #1a1a1a 50%, #0a0a0a 100%);
+  background: linear-gradient(180deg, #263238 0%, #1a1a1a 45%, #0a0a0a 100%);
   min-height: 100vh;
 }
 
@@ -368,15 +367,10 @@ onUnmounted(() => {
 .hero-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .hero-overlay {
   position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(10,10,10,0.55) 0%, rgba(10,10,10,0.88) 100%);
+  background: linear-gradient(to bottom, rgba(10,10,10,0.5) 0%, rgba(38,50,56,0.6) 60%, rgba(26,26,26,0.8) 100%);
 }
 .hero-content { position: relative; z-index: 2; }
-.hero-gradient {
-  position: absolute; bottom: 0; left: 0; right: 0; height: 200px;
-  background: linear-gradient(to bottom, transparent 0%, rgba(10,10,10,0.3) 30%, rgba(10,10,10,0.7) 70%, #0a0a0a 100%);
-  z-index: 2;
-  filter: blur(0.5px);
-}
+
 .text-shadow-heavy { text-shadow: 2px 2px 4px rgba(0,0,0,0.9); }
 
 /* CONTENIDO */
@@ -473,8 +467,8 @@ onUnmounted(() => {
 
 /* SECCIÓN INFO */
 .section-quick-info {
-  background: linear-gradient(180deg, #0a0a0a 0%, #050505 100%);
-  border-top: 1px solid rgba(255,255,255,0.05);
+  background: transparent;
+  border-top: none;
 }
 .info-card {
   background: rgba(255, 255, 255, 0.03) !important;
